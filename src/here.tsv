@@ -1,0 +1,65 @@
+annotator	bunch	filename	mark	label	offset1	offset2	span
+a		es-S0365-66912005001200010-1.ann	T1	ENFERMEDAD	21	34	ceguera legal
+a		es-S0365-66912005001200010-1.ann	T2	ENFERMEDAD	115	132	tumor intraocular
+a		es-S0365-66912005001200010-1.ann	T3	SINTOMA	165	175	hipoacusia
+a		es-S0365-66912005001200010-1.ann	T4	ENFERMEDAD	209	226	neurofibromatosis
+a		es-S0365-66912005001200010-1.ann	T5	PROCEDIMIENTO	235	304	intervenido de cataratas en ambos ojos y glaucoma en el ojo izquierdo
+a		es-S0365-66912005001200010-1.ann	T6	ENFERMEDAD	250	273	cataratas en ambos ojos
+a		es-S0365-66912005001200010-1.ann	T7	ENFERMEDAD	276	304	glaucoma en el ojo izquierdo
+a		es-S0365-66912005001200010-1.ann	T8	PROCEDIMIENTO	330	355	exploración oftalmológica
+a		es-S0365-66912005001200010-1.ann	T9	ENFERMEDAD	419	437	amaurosis en el OI
+a		es-S0365-66912005001200010-1.ann	T10	SINTOMA	453	471	nistagmus pendular
+a		es-S0365-66912005001200010-1.ann	T11	PROCEDIMIENTO	479	508	estudio del segmento anterior
+a		es-S0365-66912005001200010-1.ann	T12	ENFERMEDAD	517	559	en el OD un coloboma de iris, pseudofaquia
+a		es-S0365-66912005001200010-1.ann	T13	ENFERMEDAD	562	588	en el OI seclusión pupilar
+a		es-S0365-66912005001200010-1.ann	T14	PROCEDIMIENTO	622	637	trabeculectomia
+a		es-S0365-66912005001200010-1.ann	T15	ENTIDAD_OBSERVABLE	649	668	presión intraocular
+a		es-S0365-66912005001200010-1.ann	T16	ENFERMEDAD	753	791	coloboma de retina y nervio óptico (NO
+a		es-S0365-66912005001200010-1.ann	T17	PROCEDIMIENTO	826	851	en el OI, en la ecografía
+a		es-S0365-66912005001200010-1.ann	T18	ENFERMEDAD	826	941	en el OI, en la ecografía se observaba un desprendimiento de retina y la presencia de una masa en temporal inferior
+a		es-S0365-66912005001200010-1.ann	T19	PROCEDIMIENTO	961	964	RNM
+a		es-S0365-66912005001200010-1.ann	T20	SINTOMA	988	1032	aumento del diámetro del globo ocular del OD
+a		es-S0365-66912005001200010-1.ann	T21	SINTOMA	1046	1076	dilatación de la salida del NO
+a		es-S0365-66912005001200010-1.ann	T23	ENFERMEDAD	1367	1413	lesión extraocular a la salida del NO quística
+a		es-S0365-66912005001200010-1.ann	T24	ENFERMEDAD	1493	1519	tumor intraocular y del NO
+a		es-S0365-66912005001200010-1.ann	T25	PROCEDIMIENTO	1531	1578	enucleación, que precisó de orbitotomía lateral
+a		es-S0365-66912005001200010-1.ann	T26	ENFERMEDAD	1612	1683	globo ocular que presentaba en uno de sus polos una tumoración grisácea
+a		es-S0365-66912005001200010-1.ann	T27	PROCEDIMIENTO	715	727	fondo de ojo
+a		es-S1699-695X2014000200007-1.ann	T1	SINTOMA	33	41	asténico
+a		es-S1699-695X2014000200007-1.ann	T2	PROCEDIMIENTO	1843	1862	ecografía abdominal
+a		es-S1699-695X2014000200007-1.ann	T3	SINTOMA	43	49	álgido
+a		es-S1699-695X2014000200007-1.ann	T4	SINTOMA	52	59	delgado
+a		es-S1699-695X2014000200007-1.ann	T5	ENFERMEDAD	1554	1560	anemia
+a		es-S1699-695X2014000200007-1.ann	T6	PROCEDIMIENTO	489	522	gastroscopía con biopsia gástrica
+a		es-S1699-695X2014000200007-1.ann	T7	ENTIDAD_OBSERVABLE	1562	1598	marcadores de respuesta inflamatoria
+a		es-S1699-695X2014000200007-1.ann	T8	ENFERMEDAD	506	558	biopsia gástrica que resultó positiva para H. pylori
+a		es-S1699-695X2014000200007-1.ann	T9	ENTIDAD_OBSERVABLE	1334	1337	IMC
+a		es-S1699-695X2014000200007-1.ann	T10	SINTOMA	1350	1449	abdomen está excavado, timpánico, blando y levemente doloroso a la palpación profunda en epigastrio
+a		es-S1699-695X2014000200007-1.ann	T11	SINTOMA	1647	1674	alteraciones electrolíticas
+a		es-S1699-695X2014000200007-1.ann	T12	SINTOMA	150	167	dolor epigástrico
+a		es-S1699-695X2014000200007-1.ann	T13	PROCEDIMIENTO	1417	1449	palpación profunda en epigastrio
+a		es-S1699-695X2014000200007-1.ann	T14	SINTOMA	188	195	náuseas
+a		es-S1699-695X2014000200007-1.ann	T15	FARMACO	619	628	omeprazol
+a		es-S1699-695X2014000200007-1.ann	T16	SINTOMA	198	205	vómitos
+a		es-S1699-695X2014000200007-1.ann	T17	FARMACO	630	641	amoxicilina
+a		es-S1699-695X2014000200007-1.ann	T18	FARMACO	644	658	claritromicina
+a		es-S1699-695X2014000200007-1.ann	T19	ENFERMEDAD	1476	1487	adenopatías
+a		es-S1699-695X2014000200007-1.ann	T20	PROCEDIMIENTO	2031	2059	tránsito intestinal baritado
+a		es-S1699-695X2014000200007-1.ann	T21	SINTOMA	236	241	dolor
+a		es-S1699-695X2014000200007-1.ann	T22	PROCEDIMIENTO	1743	1765	radiografía de abdomen
+a		es-S1699-695X2014000200007-1.ann	T23	PROCEDIMIENTO	675	728	test de aliento negativo para infección por H. pylori
+a		es-S1699-695X2014000200007-1.ann	T24	ENFERMEDAD	705	728	infección por H. pylori
+a		es-S1699-695X2014000200007-1.ann	T25	ENFERMEDAD	1783	1805	obstrucción intestinal
+a		es-S1699-695X2014000200007-1.ann	T26	SINTOMA	2095	2127	lentitud de vaciamiento gástrico
+a		es-S1699-695X2014000200007-1.ann	T27	PROCEDIMIENTO	2107	2127	vaciamiento gástrico
+a		es-S1699-695X2014000200007-1.ann	T28	SINTOMA	2132	2181	disminución del calibre en la 3a porción duodenal
+a		es-S1699-695X2014000200007-1.ann	T29	PROCEDIMIENTO	791	803	antieméticos
+a		es-S1699-695X2014000200007-1.ann	T30	PROCEDIMIENTO	816	851	inhibidores de la bomba de protones
+a		es-S1699-695X2014000200007-1.ann	T31	ENFERMEDAD	2312	2331	compresión vascular
+a		es-S1699-695X2014000200007-1.ann	T32	SINTOMA	980	991	dolor agudo
+a		es-S1699-695X2014000200007-1.ann	T33	PROCEDIMIENTO	2378	2397	angioTAC de abdomen
+a		es-S1699-695X2014000200007-1.ann	T34	ENFERMEDAD	1043	1069	síndrome ansioso-depresivo
+a		es-S1699-695X2014000200007-1.ann	T35	ENFERMEDAD	2423	2473	pinza vascular que producía compresión del duodeno
+a		es-S1699-695X2014000200007-1.ann	T36	SINTOMA	1092	1118	incumplimiento terapéutico
+a		es-S1699-695X2014000200007-1.ann	T37	SINTOMA	2495	2597	pinza mesentérica afectaba al duodeno y a la vena renal izquierda, produciendo compresión y dilatación
+a		es-S1699-695X2014000200007-1.ann	T38	SINTOMA	1134	1168	alergias a alimentos ni a fármacos

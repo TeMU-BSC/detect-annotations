@@ -7,9 +7,9 @@ Created on Mon Nov 18 15:45:05 2019
 """
 
 # some_file.py
-#import sys
+import sys
 # insert at 1, 0 is the script path (or '' in REPL)
-#sys.path.insert(1, '.')
+sys.path.insert(1, '.')
 
 import string
 from spacy.lang.es import STOP_WORDS
@@ -269,19 +269,19 @@ def format_text_info(txt, min_upper):
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
     
-    # Create dict with all words and their positions in text
-    # create another dict without the stopwords and the single-character words
-    allwords2pos = {}
+    # Remove stopwords and single-character words
+    large_words = list(filter(lambda x: len(x) > 1, words_no_punctuation))
+    words_no_stw = set(filter(lambda x: x.lower() not in STOP_WORDS, large_words))
+    
+    # Create dict with words and their positions in text
     words2pos = {}
-    for word in words_no_punctuation:
+    for word in words_no_stw:
         occurrences = list(re.finditer(re.escape(word), txt))
         if len(occurrences) == 0:
             print('ERROR: ORIGINAL WORD NOT FOUND IN ORIGINAL TEXT')
             print(word)
         pos = list(map(lambda x: x.span(), occurrences))
-        allwords2pos[word] = pos
-        if ((word.lower() not in STOP_WORDS) & (len(word)>1)):
-            words2pos[word] = pos
+        words2pos[word] = pos
         
     # lowercase words and remove accents from words
     words_unacc2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
@@ -290,7 +290,7 @@ def format_text_info(txt, min_upper):
     # Set of transformed words
     words_final = set(words_unacc2pos)
     
-    return words_final, words_unacc2pos, allwords2pos
+    return words_final, words_unacc2pos
 
 
 
@@ -312,7 +312,7 @@ def find_new_annotations(datapath, min_upper, file2annot_unacc, file2annot,
                 txt = open(os.path.join(root,filename)).read()
         
                 ## 2. Format text information ##
-                words_final, words_unacc2pos, all_words2pos = format_text_info(txt, min_upper)
+                words_final, words_unacc2pos = format_text_info(txt, min_upper)
                 
                 ## 3. Matching ##
                 # Find words within annotations of OTHER files
@@ -330,16 +330,19 @@ def find_new_annotations(datapath, min_upper, file2annot_unacc, file2annot,
                     for k,v in annot2annot_unacc.items():
                         if match in v:
                             original_annotations.append(k)
-                            
+                     
+                    match_text_locations = words_unacc2pos[match]
                     for original_annot in original_annotations:
                         original_label = annot2label[original_annot]
                         original_text_locations = words_unacc2pos[match]
+                        n_chars = len(original_annot)
+                        n_words = len(original_annot.split())
                         
                         # If original_annotation is just the match, append it to new annotations
                         if (len(original_annot.split()) == 1):
                             for span in original_text_locations:
                                 # Filter out things like 'espesor' -> 'peso'
-                                if ((txt[span[0]-1].isalnum() == False) & (txt[span[1]]==False)):
+                                if ((txt[span[0]-1].isalnum() == False) & (txt[span[1]].isalnum()==False)):
                                     new_annotations.append([txt[span[0]:span[1]], 
                                                             span[0], span[1], original_label])
             
@@ -347,33 +350,31 @@ def find_new_annotations(datapath, min_upper, file2annot_unacc, file2annot,
                         # surroundings of the annotation.
                         # Do not care if extra whitespaces or punctuation signs 
                         else:
-                            n_chars = len(original_annot)
-                            n_words = len(original_annot.split())
-                            match_span = words_unacc2pos[match][0] ###### Remove this [0] and make it for all occurrences!!!
-                            large_span = txt[max(0, match_span[0]-n_chars):min(match_span[1]+n_chars, len(txt))]
-                            
-                            # remove half-catched words
-                            first_space = re.search('( |\n)', large_span).span()[1]
-                            last_space = len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0]
-                            large_span_reg = large_span[first_space:last_space]
-                            
-                            # normalize
-                            original_annotation_norm = normalization_annot(original_annot)
-                            (token_span_unacc2token_span, id2token_span, 
-                             id2token_span_pos) = normalization_span(large_span_reg, n_words)
-                            token_span2id = {' '.join(v): k for k, v in id2token_span.items()}
-                            
-                            # Match
-                            try:
-                                res = token_span_unacc2token_span[original_annotation_norm]
-                                id_ = token_span2id[res]
-                                pos = id2token_span_pos[id_]
-                                off0 = pos[0] + first_space + max(0, match_span[0]-n_chars)
-                                off1 = pos[1] + first_space + max(0, match_span[0]-n_chars)
-                                new_annotations.append([txt[off0:off1], off0, 
-                                                        off1, original_label])                                
-                            except: 
-                                pass
+                            for match_span in match_text_locations:
+                                large_span = txt[max(0, match_span[0]-n_chars):min(match_span[1]+n_chars, len(txt))]
+                                
+                                # remove half-catched words
+                                first_space = re.search('( |\n)', large_span).span()[1]
+                                last_space = len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0]
+                                large_span_reg = large_span[first_space:last_space]
+                                
+                                # normalize
+                                original_annotation_norm = normalization_annot(original_annot)
+                                (token_span_unacc2token_span, id2token_span, 
+                                 id2token_span_pos) = normalization_span(large_span_reg, n_words)
+                                token_span2id = {' '.join(v): k for k, v in id2token_span.items()}
+                                
+                                # Match
+                                try:
+                                    res = token_span_unacc2token_span[original_annotation_norm]
+                                    id_ = token_span2id[res]
+                                    pos = id2token_span_pos[id_]
+                                    off0 = pos[0] + first_space + max(0, match_span[0]-n_chars)
+                                    off1 = pos[1] + first_space + max(0, match_span[0]-n_chars)
+                                    new_annotations.append([txt[off0:off1], off0, 
+                                                            off1, original_label])                                
+                                except: 
+                                    pass
                         
                 ## 4. Remove duplicates ##
                 new_annotations.sort()
@@ -431,6 +432,7 @@ if __name__ == '__main__':
     datapath = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/'
     output_path_new_files = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology_suggestions/'
     output_path_df = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/annots.tsv'
+    output_path_df = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/annots_to_delete.tsv'
 
     path = '/home/antonio/Documents/Projects/NER/merge_snomed_and_annotations/'
     datapath = 'data/testing_data2/'

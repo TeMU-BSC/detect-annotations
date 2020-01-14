@@ -15,7 +15,7 @@ import string
 def parse_ann(datapath, output_path):
     start = time.time()
     info = []
-    
+    c = 0
     ## Iterate over the files and parse them
     filenames = []
     for root, dirs, files in os.walk(datapath):
@@ -48,8 +48,7 @@ def parse_ann(datapath, output_path):
                          offset = label_offset[1:]
                          span = splitted[2].strip()
                          if len(offset)>2:
-                             #print(filename)
-                             #print(offset)
+                             c = c +1
                              pass
                          else:
                              info.append([annotator, bunch, filename,
@@ -68,4 +67,6 @@ def parse_ann(datapath, output_path):
     df = pd.DataFrame(info, columns=['annotator', 'bunch', 'filename', 'mark',
                                      'label', 'offset1', 'offset2', 'span'])
     df.to_csv(output_path, sep='\t',index=False)
+    
+    print('Number of discontinuous annotations: {}'.format(c))
     return df, filenames
