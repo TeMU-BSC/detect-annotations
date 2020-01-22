@@ -31,37 +31,34 @@ def Flatten(ul):
 def remove_accents(data):
     return ''.join(x for x in unicodedata.normalize('NFKD', data) if x in string.printable)
 
-def copy_dir_structure(input_path_old_files, output_path_new_files):
+def copy_dir_structure(datapath, output_path_new_files):
     '''
     DESCRIPTION: copy folders structure in a new route.
-    INPUT: input_path_old_files: str. Directory whose structure I want to replicate
+    INPUT: datapath: str. Directory whose structure I want to replicate
            output_path_new_files: str. Root directory on which I want to re-create
               the sub-folder structure.
     '''
-    
-    for dirpath, dirnames, filenames in os.walk(input_path_old_files):
-        print(dirpath[len(input_path_old_files):])
+    for dirpath, dirnames, filenames in os.walk(datapath):
         structure = os.path.join(output_path_new_files, 
-                                 dirpath[len(input_path_old_files):])
+                                 dirpath[len(datapath):])
+        print(structure)
         if not os.path.isdir(structure):
-            print(structure)
             os.mkdir(structure)
         else:
             print("Folder does already exist!")
             
-def copy_all_files(input_path_old_files, output_path_new_files):
+def copy_all_files(datapath, output_path_new_files):
     '''
     DESCRIPTION: copy files from one directory to another. It respects folder 
         structure.
-    INPUT: input_path_old_files: str. Source directory.
+    INPUT: datapath: str. Source directory.
            output_path_new_files: str. Target directory.
     '''
-    
-    for root, dirs, files in os.walk(input_path_old_files):
+    for root, dirs, files in os.walk(datapath):
         for filename in files:
             copyfile(os.path.join(root,filename), 
                      os.path.join(output_path_new_files,
-                                  root[len(input_path_old_files):],
+                                  root[len(datapath):],
                                   filename))
             
             
@@ -140,8 +137,10 @@ def argparser():
     '''
     
     parser = argparse.ArgumentParser(description='process user given parameters')
-    parser.add_argument("-i", "--input-brat", required = True, dest = "datapath", 
-                        help = "absolute path to original input brat files")
+    parser.add_argument("-i", "--input-annot", required = True, dest = "input_annot", 
+                        help = "absolute path to already annotated brat files or TSV with 4 columns: filename, label, span")
+    parser.add_argument("-d", "--datapath", required = True, dest = "datapath", 
+                        help = "absolute path to already brat files")
     parser.add_argument("-o", "--output-brat", required =  True, 
                         dest="output_path_new_files", 
                         help = "absolute path to output brat files")
@@ -151,11 +150,11 @@ def argparser():
     args = parser.parse_args()
     
     datapath = args.datapath
-    input_path_old_files = datapath
+    input_annotations = args.input_annot
     output_path_new_files = args.output_path_new_files
     output_path_df = args.output_path_df
     
-    return datapath, input_path_old_files, output_path_new_files, output_path_df
+    return datapath, input_annotations, output_path_new_files, output_path_df
 
 
 def strip_punct(m_end, m_start, m_group, exit_bool):

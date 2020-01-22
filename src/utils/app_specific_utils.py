@@ -104,18 +104,16 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
                 if filename[-3:] == 'txt':       
                     filename_ann = filename[0:-3]+ 'ann'
                     #print(filename)
-                    # 1. Open .ann file & get last line
+                    # 1. Open .ann file & get highest mark
                     with open(os.path.join(root,filename_ann),"r") as file:
                         lines = file.readlines()
                         if lines:
-                            last_line = lines[-1]
-                            c = 0
-                            while last_line[0] != 'T':
-                                c = c + 1
-                                last_line = lines[-1 - c]
+                            # Get marks
+                            marks = list(map(lambda x: int(x.split('\t')[0][1:]),
+                                             filter(lambda x: x[0] == 'T', lines)))
                         
-                            # 2. Get last mark
-                            mark = int(last_line.split('\t')[0][1:])
+                            # 2. Get highest mark
+                            mark = max(marks)
                         else:
                             # 2. Get last mark
                             mark = 0
@@ -127,9 +125,7 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
                             mark = mark + 1
                             file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
                                        ' ' + str(a[1]) + ' ' + str(a[2]) + 
-                                       '\t' + a[0] + '\n')
-                            print(os.path.join(root,filename_ann))
-                            
+                                       '\t' + a[0] + '\n')                            
                             
 
 def parse_ann(datapath, output_path):
@@ -196,7 +192,15 @@ def parse_ann(datapath, output_path):
     print('Number of discontinuous annotations: {}'.format(c))
     return df, filenames
 
-
+def parse_tsv(input_path_old_files):
+    
+    df_annot = pd.read_csv(input_path_old_files, sep='\t', header=None)
+    if len(df_annot.columns) == 8:
+        df_annot.columns=['annotator', 'bunch', 'filename', 'mark',
+                      'label', 'offset1', 'offset2', 'span']
+    else:
+        df_annot.columns = ['filename', 'label', 'span']
+    return df_annot
 def format_ann_info(df_annot, min_upper):
     '''
     DESCRIPTION: Build useful Python dicts from DataFrame with info from TSV file
@@ -375,3 +379,35 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
         pass
     
     return predictions, pos_matrix
+
+def remove_redundant_suggestions(datapath):
+    for root, dirs, files in os.walk(datapath):
+        for filename in files:
+            if filename[-3:] == 'ann': # get only ann files
+                f = open(os.path.join(root,filename)).readlines()
+                offsets = []
+                to_delete = []
+                
+                # 1. Get position of confirmed annotations
+                for line in f:
+                    if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
+                        splitted = line.split('\t')
+                        label_offset = splitted[1].split(' ')
+                        offsets.append([label_offset[1:][0], label_offset[1:][1]])
+                            
+                # 2.1 Get position of suggestions.
+                # 2.2 Check suggestions are not contained in any confirmed annotation
+                for line in f:
+                    if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
+                        splitted = line.split('\t')
+                        label_offset = splitted[1].split(' ')
+                        new_offset = [label_offset[1:][0], label_offset[1:][1]]
+                        if any(map(lambda x: (x[0] <= new_offset[0]) & (x[1] >= new_offset[1]), offsets)):
+                            to_delete.append(splitted[0])
+                                
+                # 3. Re-write ann without suggestions that were contained in a
+                # confirmed annotation
+                with open(os.path.join(root,filename), 'w') as fout:
+                    for line in f:
+                        if line.split('\t')[0] not in to_delete:
+                            fout.write(line)

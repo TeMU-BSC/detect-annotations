@@ -14,8 +14,8 @@ import os
 import time
 from utils.app_specific_utils import (parse_ann, format_ann_info,
                                       format_text_info, modify_copied_files,
-                                      store_prediction,
-                                      check_surroundings)
+                                      store_prediction, parse_tsv,
+                                      check_surroundings, remove_redundant_suggestions)
 
 from utils.general_utils import (argparser, Flatten, copy_dir_structure, 
                                  copy_all_files)   
@@ -91,7 +91,7 @@ def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
                                 # Check span is surrounded by spaces or punctuation signs &
                                 # span is not contained in a previously stored prediction
                                 if (((txt[span[0]-1].isalnum() == False) &
-                                     (txt[span[1]].isalnum()==False)) &
+                                     (txt[span[1]].isalnum() == False)) &
                                     (not any([(item[0]<=span[0]) & (span[1]<=item[1]) 
                                               for item in pos_matrix]))):
                                     
@@ -102,7 +102,6 @@ def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
                                                                     new_annotations,
                                                                     span[0], span[1], 
                                                                     original_label,
-                                                                    df_annot,
                                                                     original_annot,
                                                                     txt)
 
@@ -137,39 +136,23 @@ if __name__ == '__main__':
     
     min_upper = 5 # minimum number of characters a string must have to lowercase it
 
-    ######## Define paths ########
-    '''
-    datapath = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/'
-    output_path_new_files = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology_suggestions/'
-    output_path_df = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/annots.tsv'
-    output_path_df = '/home/antonio/Documents/Projects/Tasks/CodiEsp/data/codificacion/terminados_only_oncology/annots_to_delete.tsv'
-
-    path = '/home/antonio/Documents/Projects/NER/merge_snomed_and_annotations/'
-    datapath = 'data/testing_data2/'
-    output_path_df = '/docs/parsed_ann_files_testing.tsv'
-    input_path_old_files = 'data/testing_data2/'
-    output_path_new_files = 'output/testing_data2/'
-    
-    path = '/home/antonio/Documents/Projects/NER/merge_snomed_and_annotations/'
-    datapath = 'data/NER_FINAL/FINAL'
-    output_path_df = '/docs/parsed_ann_files_testing.tsv'
-    input_path_old_files = 'data/NER_FINAL/'
-    output_path_new_files = 'output/new_NER_FINAL/'
-    '''
-    
+    ######## Define paths ########   
     print('\n\nParsing script arguments...\n\n')
     datapath, input_path_old_files, output_path_new_files, output_path_df = argparser()
-      
     
     ######## GET ANN INFORMATION ########    
     # Get DataFrame
-    print('\n\nObtaining original .ann annotations...\n\n')
-    df_annot, filenames = parse_ann(datapath, output_path_df)
+    print('\n\nObtaining original annotations...\n\n')
+    if input_path_old_files.split('.')[-1] == 'tsv':
+        df_annot = parse_tsv(input_path_old_files)
+    else:
+        df_annot, _ = parse_ann(input_path_old_files, output_path_df)
     
     
     ######## FORMAT ANN INFORMATION #########
-    print('\n\nFormatting original .ann annotations...\n\n')
-    file2annot, file2annot_processed, annot2label, annot2annot_processed = format_ann_info(df_annot, min_upper)
+    print('\n\nFormatting original annotations...\n\n')
+    file2annot, file2annot_processed, annot2label, annot2annot_processed = format_ann_info(df_annot,
+                                                                                           min_upper)
     
     
     ######## FIND MATCHES IN TEXT ########
@@ -181,17 +164,24 @@ if __name__ == '__main__':
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
     #print(annotations_not_in_ann)
-    
+       
     
     ######### WRITE FILES #########   
     print('\n\nWriting new brat files...\n\n')
-    # Create directory structure
-    print(input_path_old_files)
-    print(output_path_new_files)               
-    copy_dir_structure(input_path_old_files, output_path_new_files)
+    # Create directory structure  
+    print(datapath)
+    print(output_path_new_files)          
+    copy_dir_structure(datapath, output_path_new_files)
     
     # Copy all files           
-    copy_all_files(input_path_old_files, output_path_new_files)
+    copy_all_files(datapath, output_path_new_files)
     
     # Modify annotated files
     modify_copied_files(annotations_not_in_ann, output_path_new_files)
+    
+    
+    ######## REMOVE REDUNDANT SUGGESTIONS ########
+    print("\n\nRemoving redundant suggestions...\n\n")
+    remove_redundant_suggestions(output_path_new_files)
+    
+    print('\n\nFINISHED!')
