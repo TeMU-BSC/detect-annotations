@@ -17,8 +17,15 @@ import argparse
 def Flatten(ul):
     '''
     DESCRIPTION: receives a nested list and returns it flattened
-    INPUT: ul: list
-    OUTPUT: fl: list'''
+    
+    Parameters
+    ----------
+    ul: list
+    
+    Returns
+    -------
+    fl: list
+    '''
     
     fl = []
     for i in ul:
@@ -34,9 +41,13 @@ def remove_accents(data):
 def copy_dir_structure(datapath, output_path_new_files):
     '''
     DESCRIPTION: copy folders structure in a new route.
-    INPUT: datapath: str. Directory whose structure I want to replicate
-           output_path_new_files: str. Root directory on which I want to re-create
-              the sub-folder structure.
+            
+    Parameters
+    ----------
+    datapath: str.
+        Directory whose structure I want to replicate
+    output_path_new_files: str. 
+        Root directory on which I want to re-create the sub-folder structure.
     '''
     for dirpath, dirnames, filenames in os.walk(datapath):
         structure = os.path.join(output_path_new_files, 
@@ -51,8 +62,13 @@ def copy_all_files(datapath, output_path_new_files):
     '''
     DESCRIPTION: copy files from one directory to another. It respects folder 
         structure.
-    INPUT: datapath: str. Source directory.
-           output_path_new_files: str. Target directory.
+        
+    Parameters
+    ----------
+    datapath: str.
+        Source directory.
+    output_path_new_files: str. 
+        Target directory.
     '''
     for root, dirs, files in os.walk(datapath):
         for filename in files:
@@ -70,15 +86,24 @@ def adjacent_combs(text, tokens2pos, n_words):
     output: [buenos, buenos días, buenos días míster, días, días míster, 
     días míster jones, míster, míster jones, jones]
     
-    INPUT: text: str. String with full text
-           tokens2pos: python dict relating every token with its position in 
-                  text. {tokens: (start, end)}
-           n_words: maximum number of tokens in a combination
+    Parameters
+    ----------
+    text: str. 
+        String with full text
+    tokens2pos: python dict 
+        It relates every token with its position in text. {tokens: (start, end)}
+    n_words: int
+        Maximum number of tokens in a combination
     
-    OUTPUT: id2token_span: python dict relating every token combination with an ID.
-            id2token_span_pos: python dict relating every token combination
-                  (identified by an ID) with its position in the text.
-            token_spans: list of token combinations.'''
+    Returns
+    -------
+    id2token_span: python dict 
+        It relates every token combination with an ID.
+    id2token_span_pos: python dict
+        It relates every token combination (identified by an ID) with its 
+        position in the text.
+    token_spans: list
+        list of token combinations.'''
     
     tokens = []
     for m in re.finditer(r'\S+', text):
@@ -162,17 +187,25 @@ def strip_punct(m_end, m_start, m_group, exit_bool):
     DESCRIPTION: remove recursively final and initial punctuation from 
               string and update start and end position.
     
-    INPUT: exit_bool: boolean value to tell whether to continue with the 
-                      recursivety.
-          m_end: int. End position
-          m_start: int. Start position
-          m_group: string
+    Parameters
+    ----------
+    exit_bool: boolean value 
+        to tell whether to continue with the recursivety.
+    m_end: int. 
+        End position
+    m_start: int. 
+        Start position
+    m_group: string
     
-    OUTPUT: exit_bool: boolean value to tell whether to continue with the 
-                      recursivety.
-          m_end: int. End position
-          m_start: int. Start position
-          m_group: string
+    Returns
+    -------
+    exit_bool: boolean value 
+        To tell whether to continue with the recursivety.
+    m_end: int. 
+        End position
+    m_start: int. 
+        Start position
+    m_group: string
     '''
     
     if m_group[-1] in string.punctuation:
@@ -201,11 +234,16 @@ def normalize_str(annot, min_upper):
     DESCRIPTION: normalize annotation: lowercase, remove extra whitespaces, 
     remove punctuation and remove accents.
     
-    INPUT: annot: string
-           min_upper: int. Specifies the minimum number of characters of a word
-               to lowercase it (to prevent mistakes with acronyms).
-
-    OUTPUT: annot_processed: string
+    Parameters
+    ----------
+    annot: string
+    min_upper: int. 
+        It specifies the minimum number of characters of a word to lowercase 
+        it (to prevent mistakes with acronyms).
+    
+    Returns
+    -------
+    annot_processed: string
     '''
     # Lowercase
     annot_lower = ' '.join(list(map(lambda x: x.lower() if len(x)>min_upper else x, annot.split(' '))))

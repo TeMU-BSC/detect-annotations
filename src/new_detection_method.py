@@ -21,8 +21,8 @@ from utils.general_utils import (argparser, Flatten, copy_dir_structure,
                                  copy_all_files)   
                             
 
-def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
-                         annot2label, annot2annot_processed):
+def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
+                         file2annot, annot2label, annot2annot_processed):
     start = time.time()
     
     annotations_not_in_ann = {}
@@ -75,6 +75,7 @@ def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
                         if len(original_annot.split()) > 1:
                             # For every match of the token in text, check its 
                             # surroundings and generate predictions
+                            code = annot2code[original_annot][0] # right now, only put first code
                             for span in match_text_locations:
                                 (new_annotations, 
                                  pos_matrix) = check_surroundings(txt, span, 
@@ -82,7 +83,7 @@ def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
                                                                   n_chars, n_words,
                                                                   original_label,
                                                                   new_annotations,
-                                                                  pos_matrix, min_upper)
+                                                                  pos_matrix, min_upper, code)
                                 
                         # If original_annotation is just the token, no need to 
                         # check the surroundings
@@ -97,13 +98,14 @@ def find_new_annotations(datapath, min_upper, file2annot_processed, file2annot,
                                     
                                     # STORE PREDICTION and eliminate old predictions
                                     # contained in the new one.
+                                    code = annot2code[original_annot][0] # right now, only put first code
                                     (new_annotations, 
                                      pos_matrix) = store_prediction(pos_matrix, 
                                                                     new_annotations,
                                                                     span[0], span[1], 
                                                                     original_label,
                                                                     original_annot,
-                                                                    txt)
+                                                                    txt, code)
 
                         
                 ## 4. Remove duplicates ##
@@ -151,13 +153,13 @@ if __name__ == '__main__':
     
     ######## FORMAT ANN INFORMATION #########
     print('\n\nFormatting original annotations...\n\n')
-    file2annot, file2annot_processed, annot2label, annot2annot_processed = format_ann_info(df_annot,
-                                                                                           min_upper)
+    (file2annot, file2annot_processed, annot2label, 
+     annot2annot_processed, annot2code) = format_ann_info(df_annot, min_upper)
     
     
     ######## FIND MATCHES IN TEXT ########
     print('\n\nFinding new annotations...\n\n')
-    total_t, annotations_not_in_ann, c = find_new_annotations(datapath, min_upper, 
+    total_t, annotations_not_in_ann, c = find_new_annotations(datapath, min_upper, annot2code,
                                                               file2annot_processed, file2annot,
                                                               annot2label, annot2annot_processed)
     
@@ -182,6 +184,7 @@ if __name__ == '__main__':
     
     ######## REMOVE REDUNDANT SUGGESTIONS ########
     print("\n\nRemoving redundant suggestions...\n\n")
-    remove_redundant_suggestions(output_path_new_files)
+    removed_suggestions = remove_redundant_suggestions(output_path_new_files)
+    print('Final number of suggested annotations: {}'.format(c-removed_suggestions))
     
     print('\n\nFINISHED!')
