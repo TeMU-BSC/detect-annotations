@@ -23,6 +23,37 @@ from utils.general_utils import (argparser, Flatten, copy_dir_structure,
 
 def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
                          file2annot, annot2label, annot2annot_processed):
+    '''
+    
+    Parameters
+    ----------
+    datapath : TYPE
+        DESCRIPTION.
+    min_upper : TYPE
+        DESCRIPTION.
+    annot2code : TYPE
+        DESCRIPTION.
+    file2annot_processed : TYPE
+        DESCRIPTION.
+    file2annot : TYPE
+        DESCRIPTION.
+    annot2label : TYPE
+        DESCRIPTION.
+    annot2annot_processed : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    total_t : float
+        Elapsed time
+    annotations_not_in_ann : dict
+        key= string with filename.txt (ex: 'cc_onco837.txt').
+        Value = list of annotations (ex: [['Carcinoma microcítico',2690,2711,'MORFOLOGIA_NEOPLASIA','8041/3'],
+                                          ['LH', 2618, 2620, '_REJ_MORFOLOGIA_NEOPLASIA', '9650/3']])
+    c : int
+        number of suggested annotations.
+
+    '''
     start = time.time()
     
     annotations_not_in_ann = {}
@@ -159,9 +190,16 @@ if __name__ == '__main__':
     
     ######## FIND MATCHES IN TEXT ########
     print('\n\nFinding new annotations...\n\n')
+    print(datapath)
     total_t, annotations_not_in_ann, c = find_new_annotations(datapath, min_upper, annot2code,
                                                               file2annot_processed, file2annot,
                                                               annot2label, annot2annot_processed)
+    
+    # Remove annotations that are always rejected
+    l = ['marcador tumoral', 'marcadores tumorales', 'marcador tumorales', 
+         'marcadores tumoral']
+    for element in l:
+        annotations_not_in_ann = {k: [x for x in v if l != x[0]] for k, v in annotations_not_in_ann.items()}
     
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
