@@ -249,7 +249,7 @@ def parse_tsv(input_path_old_files):
                       'label', 'offset1', 'offset2', 'span', 'code']
     else:
         df_annot.columns = ['code', 'span', 'label']
-        df_annot['label'] = 'MORFOLOGIA_NEOPLASIA'
+        #df_annot['label'] = 'MORFOLOGIA_NEOPLASIA'
         df_annot['filename']  ='xx'
     return df_annot
 
