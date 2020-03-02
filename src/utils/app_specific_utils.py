@@ -276,8 +276,9 @@ def format_ann_info(df_annot, min_upper):
     '''
     # Build useful Python dicts from DataFrame with info from .ann files
     file2annot = {}
-    for filename in list(df_annot.filename):
-        file2annot[filename] = list(df_annot[df_annot['filename'] == filename].span)
+    file2annot['xx'] = df_annot.span.tolist()
+    '''for filename in list(df_annot.filename):
+        file2annot[filename] = list(df_annot[df_annot['filename'] == filename].span)'''
         
     set_annotations = set(df_annot.span)
     
@@ -376,15 +377,16 @@ def format_text_info(txt, min_upper):
     return words_final, words_processed2pos
 
 def store_prediction(pos_matrix, predictions, off0, off1, original_label, 
-                     original_annot, txt, code):
+                     original_annot, txt, codes):
                                         
     # 1. Eliminate old annotations if the new one contains them
     (pos_matrix, 
      predictions) = eliminate_contained_annots(pos_matrix, predictions, off0, off1)
     
     # 2. STORE NEW PREDICTION
-    predictions.append([txt[off0:off1], off0, off1, original_label, code])   
-    pos_matrix.append([off0, off1])
+    for code in codes:
+        predictions.append([txt[off0:off1], off0, off1, original_label, code])   
+        pos_matrix.append([off0, off1])
         
     return predictions, pos_matrix
 

@@ -4,6 +4,7 @@
 Created on Mon Nov 18 15:45:05 2019
 
 @author: antonio
+TARAA
 """
 
 #import sys
@@ -106,37 +107,57 @@ def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
                         if len(original_annot.split()) > 1:
                             # For every match of the token in text, check its 
                             # surroundings and generate predictions
-                            code = annot2code[original_annot][0] # right now, only put first code
+                            codes = annot2code[original_annot]
+                            len_original = len(new_annotations)
                             for span in match_text_locations:
+                                #print(new_annotations)
                                 (new_annotations, 
                                  pos_matrix) = check_surroundings(txt, span, 
                                                                   original_annot,
                                                                   n_chars, n_words,
                                                                   original_label,
                                                                   new_annotations,
-                                                                  pos_matrix, min_upper, code)
+                                                                  pos_matrix, min_upper, codes)
+                                if len(new_annotations) != len_original:
+                                    # condition to stop looking for the same code
+                                    # in more than one place
+                                    break
                                 
                         # If original_annotation is just the token, no need to 
                         # check the surroundings
                         elif len(original_annot.split()) == 1:
+                            len_original = len(new_annotations)
                             for span in original_text_locations:
                                 # Check span is surrounded by spaces or punctuation signs &
                                 # span is not contained in a previously stored prediction
-                                if (((txt[span[0]-1].isalnum() == False) &
-                                     (txt[span[1]].isalnum() == False)) &
+                                if span[0] == 0:
+                                    cond_a = True
+                                else:
+                                    cond_a = txt[span[0]-1].isalnum() == False
+                                if span[1] == len(txt):
+                                    cond_b = True
+                                else:
+                                    cond_b = txt[span[1]].isalnum() == False
+
+                                    
+                                if ((cond_a & cond_b) &
                                     (not any([(item[0]<=span[0]) & (span[1]<=item[1]) 
                                               for item in pos_matrix]))):
                                     
                                     # STORE PREDICTION and eliminate old predictions
                                     # contained in the new one.
-                                    code = annot2code[original_annot][0] # right now, only put first code
+                                    codes = annot2code[original_annot]
                                     (new_annotations, 
                                      pos_matrix) = store_prediction(pos_matrix, 
                                                                     new_annotations,
                                                                     span[0], span[1], 
                                                                     original_label,
                                                                     original_annot,
-                                                                    txt, code)
+                                                                    txt, codes)
+                                    if len(new_annotations) != len_original:
+                                        # condition to stop looking for the same code
+                                        # in more than one place
+                                        break
 
                         
                 ## 4. Remove duplicates ##
@@ -203,22 +224,24 @@ if __name__ == '__main__':
     
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
+    
+    ######## REMOVE REDUNDANT SUGGESTIONS ########
+    
     #print(annotations_not_in_ann)
-       
     
-    ######### WRITE FILES #########   
-    print('\n\nWriting new brat files...\n\n')
-    # Create directory structure  
-    print(datapath)
-    print(output_path_new_files)          
-    copy_dir_structure(datapath, output_path_new_files)
+    ######### WRITE OUTPUT ###########
+    with open(os.path.join(output_path_new_files, 'general_file.txt'), 'w') as f:
+        for k,v in annotations_not_in_ann.items():
+            for val in v:
+                f.write(k)
+                f.write('\t')
+                f.write(str(v[0][4]))
+                f.write('\t')
+                f.write(str(v[0][0]))
+                f.write('\n')
     
-    # Copy all files           
-    copy_all_files(datapath, output_path_new_files)
     
-    # Modify annotated files
-    modify_copied_files(annotations_not_in_ann, output_path_new_files)
-    
+        
     
     ######## REMOVE REDUNDANT SUGGESTIONS ########
     print("\n\nRemoving redundant suggestions...\n\n")
