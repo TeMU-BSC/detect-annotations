@@ -418,8 +418,14 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
     large_span = txt[max(0, span[0]-n_chars):min(span[1]+n_chars, len(txt))]
 
     # remove half-catched words
-    first_space = re.search('( |\n)', large_span).span()[1]
-    last_space = (len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0])
+    try:
+        first_space = re.search('( |\n)', large_span).span()[1]
+    except: 
+        first_space = 0
+    try:
+        last_space = (len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0])
+    except:
+        last_space = len(large_span)
     large_span_reg = large_span[first_space:last_space]
     
     # Tokenize text span 
@@ -467,8 +473,8 @@ def remove_redundant_suggestions(datapath):
     for root, dirs, files in os.walk(datapath):
         for filename in files:
             if filename[-3:] == 'ann': # get only ann files
-                print(root + '/' + filename)
                 f = open(os.path.join(root,filename)).readlines()
+                #print(os.path.join(root, filename))
                 offsets = []
                 to_delete = []
                 
@@ -486,7 +492,6 @@ def remove_redundant_suggestions(datapath):
                     if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
                         splitted = line.split('\t')
                         label_offset = splitted[1].split(' ')
-                        print(label_offset)
                         new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
                         if any(map(lambda x: (x[0] <= new_offset[0]) & (x[1] >= new_offset[1]), offsets)):
                             to_delete.append(splitted[0])
