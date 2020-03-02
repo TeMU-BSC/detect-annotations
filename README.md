@@ -1,6 +1,10 @@
+# IMPORTANT!
+# If you want to predict a code, use predict-codes branch!
+#### More work is being done on predict-codes branch, it is suggested to use clone that one.
+
 # Detect new annotations in BRAT files based on annotated entities of other files.
 
-Codes to detect new missed annotations in .ann files. Detected annotations are added to the .ann files with the \_SUG\_ prefix.
+Codes to detect missed annotations in .ann files. Detected annotations are added to the .ann files with the \_SUG\_ prefix.
 
 ## Getting Started
 
@@ -29,45 +33,36 @@ git clone <repo_url>
 
 ```
 cd detect_annotations/src
-python new_detection_method.py -i /absolute/path/to/input/folder/ -o /absolute/path/to/output/folder/ -O /path/to/tsv.tsv
+python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -O /path/to/tsv.tsv
 ```
 
-It takes absolute paths, but it should work with relative paths.
 
-## Files Description
+## Procedure Description
 
-### Find possible missing annotations and create new .ann files where they are suggested
+##### Steps:
+1. Parse annotation information in route specified with -i option.
+2. Find text spans in -d that were annotated in -i.
+3. Copy .txt and new .ann files in output folder with the detected annotations marked as \_SUG\_LABEL. 
+4. Remove duplicates.
 
-##### File: 
-src/new_detection_method.py
 
-Description: 
-1. Parse annotated .ann files in data folder. The code run in this step is in src/utils/parse_ann_for_detect_new_annotations.py
-2. Find if some entities have been annotated in some files, but not in others. Copy .txt and new .ann files in output folder with the detected annotations marked as \_SUG\_LABEL. 
+##### Arguments:
++ **Input**: 
+	+ -d option: .ann and .txt files without suggestions.
+	+ -i option: annotation information (can be .ann and .txt files or a TSV with 3 columns: code, span and label).
 
-+ Input: .ann and .txt files in input folder.
++ **Output**: 
+	+ -o option. Output folder where new .ann and .txt files will be created. 
+	+ -O option. TSV file with the information contained in the parsed .ann files from -i option.
 
-+ Output: copied and modified .ann files and .txt files in output folder. Also, a TSV file is created with the information contained in the parsed .ann files.
 
-To execute it: 
-
+##### To execute it: 
 ```
 cd detect_annotations/src
-python new_detection_method.py -i /absolute/path/to/input/folder/ -o /absolute/path/to/output/folder/ -O /path/to/tsv.tsv
+python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -O /path/to/tsv.tsv
 ```
 
-It takes absolute paths, but it should work with relative paths.
 
-
-### Scripts within utils/
-##### File:
-src/utils/parse_ann_for_detect_new_annotations.py 
-
-Description: Parse .ann files in /absolute/path/to/input/folder/
-
-+ Input: .ann files in /absolute/path/to/input/folder/
-
-+ Output: TSV file with information contained in the parsed .ann files.
 
 ## Built With
 
