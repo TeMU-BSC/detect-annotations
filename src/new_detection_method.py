@@ -94,6 +94,7 @@ def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
 
                     # Get annotations where this token is present
                     original_annotations = [k for k,v in annot2annot_processed.items() if match in v]
+                    #print(len(original_annotations))
                     # Get text locations where this token is present
                     match_text_locations = words_processed2pos[match]
                      
@@ -235,9 +236,9 @@ if __name__ == '__main__':
             for val in v:
                 f.write(k)
                 f.write('\t')
-                f.write(str(v[0][4]))
+                f.write(str(val[4]))
                 f.write('\t')
-                f.write(str(v[0][0]))
+                f.write(str(val[0]))
                 f.write('\n')
     
     
