@@ -383,8 +383,14 @@ def store_prediction(pos_matrix, predictions, off0, off1, original_label,
      predictions) = eliminate_contained_annots(pos_matrix, predictions, off0, off1)
     
     # 2. STORE NEW PREDICTION
-    predictions.append([txt[off0:off1], off0, off1, original_label, code])   
-    pos_matrix.append([off0, off1])
+    if ((txt[off0-11:off1] != 'marcadores tumorales') &
+        (txt[off0-9:off1] != 'marcador tumoral') &
+        (txt[off0:off1] != 'broncoscopia')  &
+        (txt[off0:off1] != 'broncoscopia') &
+        (txt[off0-10:off1].lower() != 'comité de tumores')&
+        (txt[off0-10:off1].lower() != 'comite de tumores')):
+        predictions.append([txt[off0:off1], off0, off1, original_label, code])
+        pos_matrix.append([off0, off1])
         
     return predictions, pos_matrix
 
