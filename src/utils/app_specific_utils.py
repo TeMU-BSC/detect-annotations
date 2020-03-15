@@ -146,7 +146,7 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
                                        ' T' + str(mark) + '\t' + a[4] + '\n') 
                             
 
-def parse_ann(datapath, output_path):
+def parse_ann(datapath, output_path, valid_labels = []):
     '''
     DESCRIPTION: parse information in .ann files.
     
@@ -204,17 +204,19 @@ def parse_ann(datapath, output_path):
                          mark = splitted[0]
                          label_offset = splitted[1].split(' ')
                          label = label_offset[0]
+                         # Only store labels I am interested in
+                         if label not in valid_labels:
+                             continue
                          offset = label_offset[1:]
-                         span = splitted[2].strip()
                          if len(offset)>2:
                              c = c +1
-                             pass
-                         else:
-                             if mark in mark2code.keys():
-                                 code = mark2code[mark]
-                                 info.append([annotator, bunch, filename,
-                                                  mark, label, offset[0], offset[-1],
-                                                  span.strip(string.punctuation), code])
+                             continue
+                         span = splitted[2].strip()
+                         if mark in mark2code.keys():
+                             code = mark2code[mark]
+                             info.append([annotator, bunch, filename,mark, 
+                                          label, offset[0], offset[-1], 
+                                          span.strip(string.punctuation), code])
                      
     end = time.time()
     print("Elapsed time: " + str(round(end-start, 2)) + 's')
@@ -383,10 +385,9 @@ def store_prediction(pos_matrix, predictions, off0, off1, original_label,
      predictions) = eliminate_contained_annots(pos_matrix, predictions, off0, off1)
     
     # 2. STORE NEW PREDICTION
-    if ((txt[off0-11:off1] != 'marcadores tumorales') &
-        (txt[off0-9:off1] != 'marcador tumoral') &
-        (txt[off0:off1] != 'broncoscopia')  &
-        (txt[off0:off1] != 'broncoscopia') &
+    if ((txt[off0-11:off1].lower() != 'marcadores tumorales') &
+        (txt[off0-9:off1].lower() != 'marcador tumoral') &
+        (txt[off0:off1].lower() != 'broncoscopia') &
         (txt[off0-10:off1].lower() != 'comité de tumores')&
         (txt[off0-10:off1].lower() != 'comite de tumores')):
         predictions.append([txt[off0:off1], off0, off1, original_label, code])

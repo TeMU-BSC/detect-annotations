@@ -168,7 +168,8 @@ def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
 if __name__ == '__main__':
     
     min_upper = 5 # minimum number of characters a string must have to lowercase it
-
+    valid_labels = ['MORFOLOGIA_NEOPLASIA']
+    
     ######## Define paths ########   
     print('\n\nParsing script arguments...\n\n')
     datapath, input_path_old_files, output_path_new_files, output_path_df = argparser()
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     if input_path_old_files.split('.')[-1] == 'tsv':
         df_annot = parse_tsv(input_path_old_files)
     else:
-        df_annot, _ = parse_ann(input_path_old_files, output_path_df)
+        df_annot, _ = parse_ann(input_path_old_files, output_path_df, valid_labels)
     
     
     ######## FORMAT ANN INFORMATION #########
