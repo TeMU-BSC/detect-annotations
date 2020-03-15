@@ -12,6 +12,29 @@ import unicodedata
 from shutil import copyfile
 import re
 import argparse
+from spacy.lang.es import Spanish
+
+def tokenize(text):
+    '''
+    Tokenize a string in Spanish
+
+    Parameters
+    ----------
+    text : str
+        Spanish text string to tokenize.
+
+    Returns
+    -------
+    tokenized : list
+        List of tokens (includes punctuation tokens).
+
+    '''
+    nlp = Spanish()
+    doc = nlp(text)
+    token_list = []
+    for token in doc:
+        token_list.append(token.text)
+    return token_list
 
 
 def Flatten(ul):

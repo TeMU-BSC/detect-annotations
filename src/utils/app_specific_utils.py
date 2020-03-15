@@ -11,7 +11,8 @@ import os
 import time
 import string
 from spacy.lang.es import STOP_WORDS
-from utils.general_utils import remove_accents, adjacent_combs, strip_punct, normalize_str
+from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
+                                 tokenize, normalize_str)
 import re
 
 
@@ -291,7 +292,7 @@ def format_ann_info(df_annot, min_upper):
     
     # Split values: {'one': 'three two'} must be {'one': ['three', 'two']}   
     annot2annot_split = annot2annot.copy()
-    annot2annot_split = dict((k, v.split()) for k,v in annot2annot_split.items())
+    annot2annot_split = dict((k, tokenize(v)) for k,v in annot2annot_split.items())
     
     # Do not store stopwords or single-character words as values
     for k, v in annot2annot_split.items():
@@ -349,7 +350,7 @@ def format_text_info(txt, min_upper):
     '''
     
     # Get individual words and their position in original txt
-    words = txt.split()
+    words = tokenize(txt)
     
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
@@ -386,6 +387,7 @@ def store_prediction(pos_matrix, predictions, off0, off1, original_label,
     
     # 2. STORE NEW PREDICTION
     if ((txt[off0-11:off1].lower() != 'marcadores tumorales') &
+        (txt[off0-12:off1].lower() != 'marcardores tumorales') &
         (txt[off0-9:off1].lower() != 'marcador tumoral') &
         (txt[off0:off1].lower() != 'broncoscopia') &
         (txt[off0-10:off1].lower() != 'comité de tumores')&

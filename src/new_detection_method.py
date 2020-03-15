@@ -103,7 +103,7 @@ def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
                         n_chars = len(original_annot)
                         n_words = len(original_annot.split())
                         
-                        if len(original_annot.split()) > 1:
+                        if n_words > 1:
                             # For every match of the token in text, check its 
                             # surroundings and generate predictions
                             code = annot2code[original_annot][0] # right now, only put first code
@@ -118,7 +118,7 @@ def find_new_annotations(datapath, min_upper, annot2code, file2annot_processed,
                                 
                         # If original_annotation is just the token, no need to 
                         # check the surroundings
-                        elif len(original_annot.split()) == 1:
+                        elif n_words == 1:
                             for span in original_text_locations:
                                 # Check span is surrounded by spaces or punctuation signs &
                                 # span is not contained in a previously stored prediction
