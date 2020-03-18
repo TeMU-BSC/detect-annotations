@@ -11,9 +11,10 @@ import os
 import time
 import string
 from spacy.lang.es import STOP_WORDS
+import re
 from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
                                  tokenize, normalize_str)
-import re
+
 
 
 def tokenize_span(text, n_words):
@@ -66,40 +67,42 @@ def tokenize_span(text, n_words):
     
     return token_span2id, id2token_span_pos, token_spans
     
-def normalize_tokens(token_spans, min_upper):
+def normalize_tokens(tokens, min_upper):
     '''
     DESCRIPTION: normalize tokens: lowercase, remove extra whitespaces, 
     remove punctuation and remove accents.
+    CAREFULL! I LOSE INFORMATION IF I HAVE TWO DIFFERENT TOKENS WHICH ARE
+    NORMALIZED TO THE SAME STRING
     
     Parameters
     ----------
-    token_spans: list
+    tokens: list
     min_upper: int. S
         It specifies the minimum number of characters of a word to lowercase
         it (to prevent mistakes with acronyms).
 
     Returns
     -------
-    token_span_processed2token_span: python dict 
-        It relates the normalized token combinations with the original unnormalized ones.
+    token_processed2token: python dict 
+        It relates the normalized tokens with the original unnormalized ones.
     '''
-    token_span2token_span = dict(zip(token_spans, token_spans))
+    token2token = dict(zip(tokens, tokens))
     
     # Lowercase
-    token_span_lower2token_span = dict((k.lower(), v) if len(k) > min_upper else 
-                                       (k,v) for k,v in token_span2token_span.items())
+    token_lower2token = dict((k.lower(), v) if len(k) > min_upper else 
+                                       (k,v) for k,v in token2token.items())
 
     # Remove whitespaces
-    token_span_bs2token_span = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
-                                    in token_span_lower2token_span.items())
+    token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
+                                    in token_lower2token.items())
 
     # Remove punctuation
-    token_span_punc2token_span = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_span_bs2token_span.items())
+    token_punc2token = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_bs2token.items())
     
     # Remove accents
-    token_span_processed2token_span = dict((remove_accents(k), v) for k,v in token_span_punc2token_span.items())
+    token_processed2token = dict((remove_accents(k), v) for k,v in token_punc2token.items())
     
-    return token_span_processed2token_span
+    return token_processed2token
 
 def modify_copied_files(annotations_not_in_ann, output_path_new_files):
     '''
@@ -117,34 +120,33 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
     
     for root, dirs, files in os.walk(output_path_new_files):
         for filename in files:
-            if filename in files_new_annot:
-                if filename[-3:] == 'txt':       
-                    filename_ann = filename[0:-3]+ 'ann'
-                    #print(filename)
-                    # 1. Open .ann file & get highest mark
-                    with open(os.path.join(root,filename_ann),"r") as file:
-                        lines = file.readlines()
-                        if lines:
-                            # Get marks
-                            marks = list(map(lambda x: int(x.split('\t')[0][1:]),
-                                             filter(lambda x: x[0] == 'T', lines)))
-                        
-                            # 2. Get highest mark
-                            mark = max(marks)
-                        else:
-                            # 2. Get last mark
-                            mark = 0
+            if (filename in files_new_annot) & (filename[-3:] == 'txt'):
+                filename_ann = filename[0:-3]+ 'ann'
+                #print(filename)
+                # 1. Open .ann file & get highest mark
+                with open(os.path.join(root,filename_ann),"r") as file:
+                    lines = file.readlines()
+                    if lines:
+                        # Get marks
+                        marks = list(map(lambda x: int(x.split('\t')[0][1:]),
+                                         filter(lambda x: x[0] == 'T', lines)))
                     
-                    # 3. Write new annotations
-                    new_annotations = annotations_not_in_ann[filename]
-                    with open(os.path.join(root,filename_ann),"a") as file:
-                        for a in new_annotations:
-                            mark = mark + 1
-                            file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
-                                       ' ' + str(a[1]) + ' ' + str(a[2]) + 
-                                       '\t' + a[0] + '\n')   
-                            file.write('#' + str(mark) + '\t' + 'AnnotatorNotes' +
-                                       ' T' + str(mark) + '\t' + a[4] + '\n') 
+                        # 2. Get highest mark
+                        mark = max(marks)
+                    else:
+                        # 2. Get last mark
+                        mark = 0
+                
+                # 3. Write new annotations
+                new_annotations = annotations_not_in_ann[filename]
+                with open(os.path.join(root,filename_ann),"a") as file:
+                    for a in new_annotations:
+                        mark = mark + 1
+                        file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
+                                   ' ' + str(a[1]) + ' ' + str(a[2]) + 
+                                   '\t' + a[0] + '\n')   
+                        file.write('#' + str(mark) + '\t' + 'AnnotatorNotes' +
+                                   ' T' + str(mark) + '\t' + a[4] + '\n') 
                             
 
 def parse_ann(datapath, output_path, valid_labels = []):
@@ -351,14 +353,17 @@ def format_text_info(txt, min_upper):
     
     # Get individual words and their position in original txt
     words = tokenize(txt)
+    #print(words)
     
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
+    #print(words_no_punctuation)
     
     # Remove stopwords and single-character words
     large_words = list(filter(lambda x: len(x) > 1, words_no_punctuation))
+    #print(large_words)
     words_no_stw = set(filter(lambda x: x.lower() not in STOP_WORDS, large_words))
-    
+    #print(words_no_stw)
     # Create dict with words and their positions in text
     words2pos = {}
     for word in words_no_stw:
@@ -369,9 +374,25 @@ def format_text_info(txt, min_upper):
         pos = list(map(lambda x: x.span(), occurrences))
         words2pos[word] = pos
         
-    # lowercase words and remove accents from words
+    #print(words2pos)
+    
+    # Dictionary relating original words with words processed
+    words2words = dict(zip(words_no_stw, words_no_stw))
+    words2words_processed = dict((k, remove_accents(k.lower())) if len(k) > min_upper else 
+                                (k,v) for k,v in words2words.items())
+    # Map original position to processed word
+    words_processed2pos = {}
+    for k, v in words2pos.items():
+        k_processed = words2words_processed[k]
+        if k_processed not in words_processed2pos:
+            words_processed2pos[k_processed] = v
+        else:
+            words_processed2pos[k_processed] = words_processed2pos[k_processed] + v
+    
+    '''# lowercase words and remove accents from words -> HERE I LOSE INFORMATION!
+    # If I have 'Sarcoma' and 'sarcoma', only one of the two of them is kept
     words_processed2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
-                                (k,v) for k,v in words2pos.items())
+                                (k,v) for k,v in words2pos.items())'''
     
     # Set of transformed words
     words_final = set(words_processed2pos)
@@ -395,6 +416,8 @@ def store_prediction(pos_matrix, predictions, off0, off1, original_label,
         predictions.append([txt[off0:off1], off0, off1, original_label, code])
         pos_matrix.append([off0, off1])
         
+        print(txt[off0:off1] + '--' + original_annot + '--' + str(off0) + '-' +str(off1))
+        
     return predictions, pos_matrix
 
 
@@ -402,9 +425,8 @@ def eliminate_contained_annots(pos_matrix, new_annotations, off0, off1):
     '''
     DESCRIPTION: function to be used when a new annotation is found. 
               It check whether this new annotation contains in it an already 
-              discovered annotation. In that case, the old annotation is 
-              redundant, since the new one contains it. Then, the function
-              removes the old annotation.
+              discovered annotation (smaller). In that case, the old (smaller)
+              annotation is removed
     '''
     to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annotations))) 
                     if (off0<=item[0]) & (item[1]<=off1)]
@@ -415,8 +437,8 @@ def eliminate_contained_annots(pos_matrix, new_annotations, off0, off1):
     return pos_matrix, new_annotations
 
 
-def check_surroundings(txt, span, original_annot, n_chars, n_words, original_label,
-                       predictions, pos_matrix, min_upper, code):
+def check_surroundings(txt, span, original_annot, n_chars, n_words, 
+                       original_label, predictions, pos_matrix,min_upper,code):
     '''
     DESCRIPTION: explore the surroundings of the match.
               Do not care about extra whitespaces or punctuation signs in 
@@ -452,7 +474,8 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
         off0 = (pos[0] + first_space + max(0, span[0]-n_chars))
         off1 = (pos[1] + first_space + max(0, span[0]-n_chars))
         
-        # Check new annotation is not contained in a previously stored new annotation
+        # Check new annotation (smaller) is not contained in a previously 
+        # stored new annotation (larger)
         if not any([(item[0]<=off0) & (off1<= item[1]) for item in pos_matrix]):
             # STORE PREDICTION and eliminate old predictions contained in the new one.
             predictions, pos_matrix = store_prediction(pos_matrix, predictions,
