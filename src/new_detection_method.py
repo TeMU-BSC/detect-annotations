@@ -20,7 +20,9 @@ if __name__ == '__main__':
     min_upper = 5 # minimum number of characters a string must have to lowercase it
     valid_labels = ['MORFOLOGIA_NEOPLASIA']
     ignore_annots = ['marcador tumoral', 'marcadores tumorales', 
-                     'marcador tumorales', 'marcadores tumoral']
+                     'marcador tumorales', 'marcadores tumoral', 
+                     'lesiones metastásicas', 'lesión metastásica',
+                     'enfermedad metastásica']
     
     ######## Parse command line arguments ########   
     print('\n\nParsing script arguments...\n\n')
@@ -34,6 +36,8 @@ if __name__ == '__main__':
     else:
         df_annot, _ = parse_ann(information_path, out_path_df, valid_labels)
     
+    # Remove annots
+    df_annot = df_annot.drop(df_annot[df_annot['span'].isin(ignore_annots)].index)
     
     ######## FORMAT ANN INFORMATION #########
     print('\n\nFormatting original annotations...\n\n')
@@ -44,18 +48,14 @@ if __name__ == '__main__':
     ######## FIND MATCHES IN TEXT ########
     print('\n\nFinding new annotations...\n\n')
     print(datapath)
-    '''total_t, detected_annots, c = detect_annots(datapath, min_upper, annot2code,
+    '''total_t, detected_annots, c = detect_annots_dummy(datapath, min_upper, annot2code,
                                                 file2annot_processed, file2annot,
                                                 annot2label, annot2annot_processed)'''
     
     total_t, detected_annots, c = detect_annots(datapath, min_upper, annot2code,
                                                 file2annot_processed, file2annot,
                                                 annot2label, annot2annot_processed)
-    print(detected_annots)
-    # Remove annotations
-    for element in ignore_annots:
-        detected_annots = {k: [x for x in v if element != x[0]] for k, v in detected_annots.items()}
-    
+   
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
     #print(detected_annots)

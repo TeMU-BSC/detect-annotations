@@ -416,7 +416,7 @@ def store_prediction(pos_matrix, predictions, off0, off1, original_label,
         predictions.append([txt[off0:off1], off0, off1, original_label, code])
         pos_matrix.append([off0, off1])
         
-        print(txt[off0:off1] + '--' + original_annot + '--' + str(off0) + '-' +str(off1))
+        #print(txt[off0:off1] + '--' + original_annot + '--' + str(off0) + '-' +str(off1))
         
     return predictions, pos_matrix
 
