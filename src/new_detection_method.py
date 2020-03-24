@@ -231,6 +231,7 @@ if __name__ == '__main__':
     #print(annotations_not_in_ann)
     
     ######### WRITE OUTPUT ###########
+    print('\n\nWriting output...\n\n')
     with open(os.path.join(output_path_new_files, 'general_file.txt'), 'w') as f:
         for k,v in annotations_not_in_ann.items():
             for val in v:
@@ -245,8 +246,8 @@ if __name__ == '__main__':
         
     
     ######## REMOVE REDUNDANT SUGGESTIONS ########
-    print("\n\nRemoving redundant suggestions...\n\n")
+    '''print("\n\nRemoving redundant suggestions...\n\n")
     removed_suggestions = remove_redundant_suggestions(output_path_new_files)
-    print('Final number of suggested annotations: {}'.format(c-removed_suggestions))
+    print('Final number of suggested annotations: {}'.format(c-removed_suggestions))'''
     
     print('\n\nFINISHED!')
