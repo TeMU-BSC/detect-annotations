@@ -175,51 +175,49 @@ def parse_ann(datapath, output_path, valid_labels = []):
     filenames = []
     for root, dirs, files in os.walk(datapath):
          for filename in files:
-             if filename[-3:] == 'ann': # get only ann files
-                 #print(os.path.join(root,filename))
-                 
-                 f = open(os.path.join(root,filename)).readlines()
-                 filenames.append(filename)
-                 # Get annotator and bunch
-                 bunch = root.split('/')[-1]
-                 annotator = root.split('/')[-2][-1]
-                 
-                 # Parse .ann file
-                 mark2code = {}
-                 for line in f:
-                     if line[0] == '#':
-                         line_split = line.split('\t')
-                         mark2code[line_split[1].split(' ')[1]] = line_split[2].strip()
-                         
-                 for line in f:
-                     if line[0] == 'T':
-                         splitted = line.split('\t')
-                         if len(splitted)<3:
-                             print('Line with less than 3 tabular splits:')
-                             print(root + filename)
-                             print(line)
-                             print(splitted)
-                         if len(splitted)>3:
-                             print('Line with more than 3 tabular splits:')
-                             print(root + filename)
-                             print(line)
-                             print(splitted)
-                         mark = splitted[0]
-                         label_offset = splitted[1].split(' ')
-                         label = label_offset[0]
-                         # Only store labels I am interested in
-                         if label not in valid_labels:
-                             continue
-                         offset = label_offset[1:]
-                         if len(offset)>2:
-                             c = c +1
-                             continue
-                         span = splitted[2].strip()
-                         if mark in mark2code.keys():
-                             code = mark2code[mark]
-                             info.append([annotator, bunch, filename,mark, 
-                                          label, offset[0], offset[-1], 
-                                          span.strip(string.punctuation), code])
+             if filename[-3:] != 'ann':
+                 continue
+             # get only ann files
+             #print(os.path.join(root,filename))
+            
+             f = open(os.path.join(root,filename)).readlines()
+             filenames.append(filename)
+             # Get annotator and bunch
+             bunch = root.split('/')[-1]
+             annotator = root.split('/')[-2][-1]
+             
+             # Parse .ann file
+             mark2code = {}
+             for line in f:
+                 if line[0] == '#':
+                     line_split = line.split('\t')
+                     mark2code[line_split[1].split(' ')[1]] = line_split[2].strip()
+                    
+             for line in f:
+                 if line[0] == 'T':
+                     splitted = line.split('\t')
+                     if len(splitted)<3:
+                         print('Line with less than 3 tabular splits:')
+                         print(root + filename + '\n' + line + '\n' + splitted)
+                     if len(splitted)>3:
+                         print('Line with more than 3 tabular splits:')
+                         print(root + filename + '\n' + line + '\n' + splitted)
+                     mark = splitted[0]
+                     label_offset = splitted[1].split(' ')
+                     label = label_offset[0]
+                     # Only store labels I am interested in
+                     if label not in valid_labels:
+                         continue
+                     offset = label_offset[1:]
+                     if len(offset)>2:
+                         c = c +1
+                         continue
+                     span = splitted[2].strip()
+                     if mark in mark2code.keys():
+                         code = mark2code[mark]
+                         info.append([annotator, bunch, filename,mark, label,
+                                      offset[0], offset[-1], 
+                                      span.strip(string.punctuation), code])
                      
     end = time.time()
     print("Elapsed time: " + str(round(end-start, 2)) + 's')
@@ -492,47 +490,49 @@ def remove_redundant_suggestions(datapath):
     DESCRIPTION: 
     Parameters
     ----------
-    datapath : TYPE
-        DESCRIPTION.
+    datapath : str
+        path to folder where Brat files are.
 
     Returns
     -------
-    c : TYPE
-        DESCRIPTION.
+    c : int
+        Number of removed suggestions.
 
     '''
     c = 0
     for root, dirs, files in os.walk(datapath):
         for filename in files:
-            if filename[-3:] == 'ann': # get only ann files
-                f = open(os.path.join(root,filename)).readlines()
-                #print(os.path.join(root, filename))
-                offsets = []
-                to_delete = []
-                
-                # 1. Get position of confirmed annotations
-                for line in f:
-                    if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
-                        splitted = line.split('\t')
-                        label_offset = splitted[1].split(' ')
-                        if ';' not in label_offset[1:][1]: # Do not store discontinuous annotations
-                            offsets.append([int(label_offset[1:][0]), int(label_offset[1:][1])])
+            if filename[-3:]!= 'ann':
+                continue
+            # get only ann files
+            f = open(os.path.join(root,filename)).readlines()
+            #print(os.path.join(root, filename))
+            offsets = []
+            to_delete = []
+            
+            # 1. Get position of confirmed annotations
+            for line in f:
+                if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
+                    splitted = line.split('\t')
+                    label_offset = splitted[1].split(' ')
+                    if ';' not in label_offset[1:][1]: # Do not store discontinuous annotations
+                        offsets.append([int(label_offset[1:][0]), int(label_offset[1:][1])])
+                        
+            # 2.1 Get position of suggestions.
+            # 2.2 Check suggestions are not contained in any confirmed annotation
+            for line in f:
+                if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
+                    splitted = line.split('\t')
+                    label_offset = splitted[1].split(' ')
+                    new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
+                    if any(map(lambda x: (x[0] <= new_offset[0]) & (x[1] >= new_offset[1]), offsets)):
+                        to_delete.append(splitted[0])
+                        c = c +1
                             
-                # 2.1 Get position of suggestions.
-                # 2.2 Check suggestions are not contained in any confirmed annotation
+            # 3. Re-write ann without suggestions that were contained in a
+            # confirmed annotation
+            with open(os.path.join(root,filename), 'w') as fout:
                 for line in f:
-                    if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
-                        splitted = line.split('\t')
-                        label_offset = splitted[1].split(' ')
-                        new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
-                        if any(map(lambda x: (x[0] <= new_offset[0]) & (x[1] >= new_offset[1]), offsets)):
-                            to_delete.append(splitted[0])
-                            c = c +1
-                                
-                # 3. Re-write ann without suggestions that were contained in a
-                # confirmed annotation
-                with open(os.path.join(root,filename), 'w') as fout:
-                    for line in f:
-                        if line.split('\t')[0] not in to_delete:
-                            fout.write(line)
+                    if line.split('\t')[0] not in to_delete:
+                        fout.write(line)
     return c
