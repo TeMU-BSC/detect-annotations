@@ -198,10 +198,14 @@ def parse_ann(datapath, output_path, valid_labels = []):
                      splitted = line.split('\t')
                      if len(splitted)<3:
                          print('Line with less than 3 tabular splits:')
-                         print(root + filename + '\n' + line + '\n' + splitted)
+                         print(root + filename)
+                         print(line)
+                         print(splitted)
                      if len(splitted)>3:
                          print('Line with more than 3 tabular splits:')
-                         print(root + filename + '\n' + line + '\n' + splitted)
+                         print(root + filename)
+                         print(line)
+                         print(splitted)
                      mark = splitted[0]
                      label_offset = splitted[1].split(' ')
                      label = label_offset[0]
