@@ -1,6 +1,4 @@
-# Detect new annotations in BRAT files based on annotated entities of other files.
-
-Codes to detect missed annotations in .ann files. Detected annotations are added to the .ann files with the \_SUG\_ prefix.
+# Detect new annotations in Text files based on TSV with codes and spans.
 
 ## Getting Started
 
@@ -37,19 +35,17 @@ python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/i
 
 ##### Steps:
 1. Parse annotation information in route specified with -i option.
-2. Find text spans in -d that were annotated in -i. Assign a code to them.
-3. Copy .txt and new .ann files in output folder with the detected annotations marked as \_SUG\_LABEL. 
-4. Remove duplicates.
-
+2. Find text spans in -d that are in -i. Assign a code to them.
+3. Write TSV file in -o
 
 ##### Arguments:
 + **Input**: 
-	+ -d option: .ann and .txt files without suggestions.
+	+ -d option: text files.
 	+ -i option: annotation information (can be .ann and .txt files or a TSV with 3 columns: code, span and label).
 
 + **Output**: 
-	+ -o option. Output folder where new .ann and .txt files will be created. 
-	+ -O option. TSV file with the information contained in the parsed .ann files from -i option.
+	+ -o option. Output folder where new TSV will be created. 
+	+ -O option. TSV file with the information contained in the parsed files from -i option.
 
 
 ##### To execute it: 
