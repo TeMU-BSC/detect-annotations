@@ -350,14 +350,17 @@ def format_text_info(txt, min_upper):
     
     # Get individual words and their position in original txt
     words = tokenize(txt)
+    #print(words)
     
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
+    #print(words_no_punctuation)
     
     # Remove stopwords and single-character words
     large_words = list(filter(lambda x: len(x) > 1, words_no_punctuation))
+    #print(large_words)
     words_no_stw = set(filter(lambda x: x.lower() not in STOP_WORDS, large_words))
-    
+    #print(words_no_stw)
     # Create dict with words and their positions in text
     words2pos = {}
     for word in words_no_stw:
@@ -368,9 +371,25 @@ def format_text_info(txt, min_upper):
         pos = list(map(lambda x: x.span(), occurrences))
         words2pos[word] = pos
         
-    # lowercase words and remove accents from words
+    #print(words2pos)
+    
+    # Dictionary relating original words with words processed
+    words2words = dict(zip(words_no_stw, words_no_stw))
+    words2words_processed = dict((k, remove_accents(k.lower())) if len(k) > min_upper else 
+                                (k,v) for k,v in words2words.items())
+    # Map original position to processed word
+    words_processed2pos = {}
+    for k, v in words2pos.items():
+        k_processed = words2words_processed[k]
+        if k_processed not in words_processed2pos:
+            words_processed2pos[k_processed] = v
+        else:
+            words_processed2pos[k_processed] = words_processed2pos[k_processed] + v
+    
+    '''# lowercase words and remove accents from words -> HERE I LOSE INFORMATION!
+    # If I have 'Sarcoma' and 'sarcoma', only one of the two of them is kept
     words_processed2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
-                                (k,v) for k,v in words2pos.items())
+                                (k,v) for k,v in words2pos.items())'''
     
     # Set of transformed words
     words_final = set(words_processed2pos)
