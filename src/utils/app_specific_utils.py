@@ -12,7 +12,7 @@ import os
 import time
 import string
 from spacy.lang.es import STOP_WORDS
-from utils.general_utils import remove_accents, adjacent_combs, strip_punct, normalize_str
+from utils.general_utils import remove_accents, adjacent_combs, strip_punct, normalize_str, tokenize
 import re
 
 
@@ -291,7 +291,7 @@ def format_ann_info(df_annot, min_upper):
     
     # Split values: {'one': 'three two'} must be {'one': ['three', 'two']}   
     annot2annot_split = annot2annot.copy()
-    annot2annot_split = dict((k, v.split()) for k,v in annot2annot_split.items())
+    annot2annot_split = dict((k, tokenize(v)) for k,v in annot2annot_split.items())
     
     # Do not store stopwords or single-character words as values
     for k, v in annot2annot_split.items():
@@ -349,7 +349,7 @@ def format_text_info(txt, min_upper):
     '''
     
     # Get individual words and their position in original txt
-    words = txt.split()
+    words = tokenize(txt)
     
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
