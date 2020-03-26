@@ -6,16 +6,13 @@ Scripts written in Python 3.7, anaconda distribution Anaconda3-2019.07-Linux-x86
 
 ### Prerequisites
 
-You need to have installed python3 and its base libraries, plus:
+See prerrequisites.txt file.
+(You need to have installed python3 and its base libraries, plus:
++ spacy
 + pandas
 + datetime
-+ os
-+ time
-+ re
 + shutil
 + numpy
-+ string
-+ unicodedata
 
 ### Installing
 
@@ -29,7 +26,7 @@ git clone <repo_url>
 cd detect_annotations/src
 python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -O /path/to/tsv.tsv
 ```
-
+This creates output_file.txt in /path/to/output/folder/ with the detected suggestions.
 
 ## Procedure Description
 
@@ -41,19 +38,19 @@ python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/i
 ##### Arguments:
 + **Input**: 
 	+ -d option: text files.
-	+ -i option: annotation information (can be .ann and .txt files or a TSV with 3 columns: code, span and label).
+	+ -i option: annotation information: TSV with 3 columns: code, span and label.
 
 + **Output**: 
-	+ -o option. Output folder where new TSV will be created. 
+	+ -o option. Output folder where output file will be created.
 	+ -O option. TSV file with the information contained in the parsed files from -i option.
 
 
 ##### To execute it: 
 ```
 cd detect_annotations/src
-python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -O /path/to/tsv.tsv
+python new_detection_method.py -i ../toy_data/information.tsv -d ../toy_data/ -o ../../ -O ../../here.tsv
 ```
-
+This creates output_file.txt in ../../.
 
 
 ## Built With
