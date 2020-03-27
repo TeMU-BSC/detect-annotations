@@ -11,7 +11,8 @@ import os
 import time
 import string
 from spacy.lang.es import STOP_WORDS
-from utils.general_utils import remove_accents, adjacent_combs, strip_punct, normalize_str
+from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
+                                 tokenize, normalize_str)
 import re
 
 
@@ -20,14 +21,20 @@ def tokenize_span(text, n_words):
     DESCRIPTION: obtain all token combinations in a text and information 
     about the position of every token combination in the original text.
     
-    INPUT: text: string
-           n_words: int with the maximum number of tokens I want in a token
-                  combination.
-
-    OUTPUT: token_span2id: python dict relating every token combination with an ID.
-            id2token_span_pos: dictionary relating every token combination
-                  (identified by an ID) with its position in the text.
-            token_spans: list of token combinations
+    Parameters
+    ----------
+    text: string
+    n_words: int 
+        It is the maximum number of tokens I want in a token combination.
+    Returns
+    -------
+    token_span2id: python dict 
+        It relates every token combination with an ID.
+    id2token_span_pos: python dict
+        It relates every token combination (identified by an ID) with its 
+        position in the text.
+    token_spans: list
+        list of token combinations
     '''
     
     # Split text into tokens (words), obtain their position and the previous token.
@@ -58,43 +65,53 @@ def tokenize_span(text, n_words):
     
     return token_span2id, id2token_span_pos, token_spans
     
-def normalize_tokens(token_spans, min_upper):
+def normalize_tokens(tokens, min_upper):
     '''
     DESCRIPTION: normalize tokens: lowercase, remove extra whitespaces, 
     remove punctuation and remove accents.
+    CAREFULL! I LOSE INFORMATION IF I HAVE TWO DIFFERENT TOKENS WHICH ARE
+    NORMALIZED TO THE SAME STRING
     
-    INPUT: token_spans: list
-           min_upper: int. Specifies the minimum number of characters of a word
-               to lowercase it (to prevent mistakes with acronyms).
-
-    OUTPUT: token_span_processed2token_span: python dict relating the normalized
-                    token combinations with the original unnormalized ones.
+    Parameters
+    ----------
+    tokens: list
+    min_upper: int. S
+        It specifies the minimum number of characters of a word to lowercase
+        it (to prevent mistakes with acronyms).
+    Returns
+    -------
+    token_processed2token: python dict 
+        It relates the normalized tokens with the original unnormalized ones.
     '''
-    token_span2token_span = dict(zip(token_spans, token_spans))
+    token2token = dict(zip(tokens, tokens))
     
     # Lowercase
-    token_span_lower2token_span = dict((k.lower(), v) if len(k) > min_upper else 
-                                       (k,v) for k,v in token_span2token_span.items())
+    token_lower2token = dict((k.lower(), v) if len(k) > min_upper else 
+                             (k,v) for k,v in token2token.items())
 
     # Remove whitespaces
-    token_span_bs2token_span = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
-                                    in token_span_lower2token_span.items())
+    token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
+                          in token_lower2token.items())
 
     # Remove punctuation
-    token_span_punc2token_span = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_span_bs2token_span.items())
+    token_punc2token = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_bs2token.items())
     
     # Remove accents
-    token_span_processed2token_span = dict((remove_accents(k), v) for k,v in token_span_punc2token_span.items())
+    token_processed2token = dict((remove_accents(k), v) for k,v in token_punc2token.items())
     
-    return token_span_processed2token_span
+    return token_processed2token
 
 def modify_copied_files(annotations_not_in_ann, output_path_new_files):
     '''
     DESCRIPTION: add suggestions (newly discovered annotations) to ann files.
     
-    INPUT: annotations_not_in_ann: python dict with new annotations and the file
-                they belong to. {filename: [annotation1, annotatio2, ]}
-           output_path_new_files: str. Path to files.
+    Parameters
+    ----------
+    annotations_not_in_ann: python dict 
+        It has new annotations and the file they belong to. 
+        {filename: [annotation1, annotatio2, ]}
+    output_path_new_files: str. 
+        Path to files.
     '''
     files_new_annot = list(annotations_not_in_ann.keys())
     
@@ -128,17 +145,26 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
                                        '\t' + a[0] + '\n')                            
                             
 
-def parse_ann(datapath, output_path):
+def parse_ann(datapath, output_path, valid_labels = []):
     '''
     DESCRIPTION: parse information in .ann files.
     
-    INPUT: datapath: str. Route to the folder where the files are. 
-           output_path: str. Path to output TSV where information will be stored.
+    Parameters
+    ----------
+    datapath: str. 
+        Route to the folder where the files are. 
+    output_path: str. 
+        Path to output TSV where information will be stored.
            
-    OUTPUT: df: pandas DataFrame with information from ann files. Columns: 
-                'annotator', 'bunch', 'filename', 'mark', 'label', 'offset1', 'offset2', 'span'
-            filenames: list of filenames
+    Returns
+    -------
+    df: pandas DataFrame 
+        It has information from ann files. Columns: 'annotator', 'bunch',
+        'filename', 'mark', 'label', 'offset1', 'offset2', 'span', 'code'
+    filenames: list 
+        list of filenames
     '''
+    
     start = time.time()
     info = []
     c = 0
@@ -146,40 +172,42 @@ def parse_ann(datapath, output_path):
     filenames = []
     for root, dirs, files in os.walk(datapath):
          for filename in files:
-             if filename[-3:] == 'ann': # get only ann files
-                 
-                 f = open(os.path.join(root,filename)).readlines()
-                 filenames.append(filename)
-                 # Get annotator and bunch
-                 bunch = root.split('/')[-1]
-                 annotator = root.split('/')[-2][-1]
-                 
-                 # Parse .ann file
-                 for line in f:
-                     if line[0] == 'T':
-                         splitted = line.split('\t')
-                         if len(splitted)<3:
-                             print('Line with less than 3 tabular splits:')
-                             print(root + filename)
-                             print(line)
-                             print(splitted)
-                         if len(splitted)>3:
-                             print('Line with more than 3 tabular splits:')
-                             print(root + filename)
-                             print(line)
-                             print(splitted)
-                         mark = splitted[0]
-                         label_offset = splitted[1].split(' ')
-                         label = label_offset[0]
-                         offset = label_offset[1:]
-                         span = splitted[2].strip()
-                         if len(offset)>2:
-                             c = c +1
-                             pass
-                         else:
-                             info.append([annotator, bunch, filename,
-                                              mark, label, offset[0], offset[-1],
-                                              span.strip(string.punctuation)])
+             if filename[-3:] != 'ann':
+                 continue
+             # get only ann files
+               
+             f = open(os.path.join(root,filename)).readlines()
+             filenames.append(filename)
+             # Get annotator and bunch
+             bunch = root.split('/')[-1]
+             annotator = root.split('/')[-2][-1]
+            
+             # Parse .ann file
+             for line in f:
+                 if line[0] == 'T':
+                     splitted = line.split('\t')
+                     if len(splitted)<3:
+                         print('Line with less than 3 tabular splits:')
+                         print(root + filename)
+                         print(line)
+                         print(splitted)
+                     if len(splitted)>3:
+                         print('Line with more than 3 tabular splits:')
+                         print(root + filename)
+                         print(line)
+                         print(splitted)
+                     mark = splitted[0]
+                     label_offset = splitted[1].split(' ')
+                     label = label_offset[0]
+                     offset = label_offset[1:]
+                     span = splitted[2].strip()
+                     if len(offset)>2:
+                         c = c +1
+                         pass
+                     else:
+                         info.append([annotator, bunch, filename, mark, label,
+                                      offset[0], offset[-1], 
+                                      span.strip(string.punctuation)])
                      
     end = time.time()
     print("Elapsed time: " + str(round(end-start, 2)) + 's')
@@ -193,6 +221,21 @@ def parse_ann(datapath, output_path):
     return df, filenames
 
 def parse_tsv(input_path_old_files):
+    '''
+    DESCRIPTION: Get information from ann that was already stored in a TSV file.
+    
+    Parameters
+    ----------
+    input_path_old_files: string
+        path to TSV file with columns: ['annotator', 'bunch', 'filename', 
+        'mark','label', 'offset1', 'offset2', 'span']
+        Additionally, we can also have the path to a 3 column TSV: ['filename', 'label', 'span']
+    
+    Returns
+    -------
+    df_annot: pandas DataFrame
+        It has 3 columns: 'filename', 'label', 'span'.
+    '''
     
     df_annot = pd.read_csv(input_path_old_files, sep='\t', header=None)
     if len(df_annot.columns) == 8:
@@ -201,20 +244,28 @@ def parse_tsv(input_path_old_files):
     else:
         df_annot.columns = ['filename', 'label', 'span']
     return df_annot
+
+
 def format_ann_info(df_annot, min_upper):
     '''
     DESCRIPTION: Build useful Python dicts from DataFrame with info from TSV file
     
-    INPUT: df_annot: pandas DataFrame with 4 columns: 'filename', 'label', 'code', 'span'
-           min_upper: int. Specifies the minimum number of characters of a word
-               to lowercase it (to prevent mistakes with acronyms).
+    Parameters
+    ----------
+    df_annot: pandas DataFrame 
+        With 4 columns: 'filename', 'label', 'code', 'span'
+    min_upper: int. 
+        It specifies the minimum number of characters of a word to lowercase 
+        it (to prevent mistakes with acronyms).
     
-    OUTPUT: file2annot: python dict
-            file2annot_processed: python dict
-            annot2label: python dict with every unmodified annotation and 
-              its label.
-            annot2annot_processed: python dict with every unmodified annotation
-              and the words it has normalized.
+    Returns
+    -------
+    file2annot: python dict
+    file2annot_processed: python dict
+    annot2label: python dict
+        It has every unmodified annotation and its label.
+    annot2annot_processed: python dict 
+        It has every unmodified annotation and the words it has normalized.
     '''
     # Build useful Python dicts from DataFrame with info from .ann files
     file2annot = {}
@@ -229,7 +280,7 @@ def format_ann_info(df_annot, min_upper):
     
     # Split values: {'one': 'three two'} must be {'one': ['three', 'two']}   
     annot2annot_split = annot2annot.copy()
-    annot2annot_split = dict((k, v.split()) for k,v in annot2annot_split.items())
+    annot2annot_split = dict((k, tokenize(v)) for k,v in annot2annot_split.items())
     
     # Do not store stopwords or single-character words as values
     for k, v in annot2annot_split.items():
@@ -269,26 +320,36 @@ def format_text_info(txt, min_upper):
     original text. Words of interest are normalized: lowercased and removed 
     accents.
     
-    INPUT: txt: str with the text to format.
-           min_upper: int. Specifies the minimum number of characters of a word
-               to lowercase it (to prevent mistakes with acronyms).
+    Parameters
+    ----------
+    txt: str 
+        contains the text to format.
+    min_upper: int. 
+        Specifies the minimum number of characters of a word to lowercase it
+        (to prevent mistakes with acronyms).
     
-    OUTPUT: words_processed2pos: dictionary relating the word normalzied (trimmed,
-                removed stpw, lowercased, removed accents) and its position in
-                the original text.
-            words_final: set of words in text.
+    Returns
+    -------
+    words_processed2pos: dictionary
+        It relates the word normalzied (trimmed, removed stpw, lowercased, 
+        removed accents) and its position in the original text.
+    words_final: set
+            set of words in text.
     '''
     
     # Get individual words and their position in original txt
-    words = txt.split()
+    words = tokenize(txt)
+    #print(words)
     
     # Remove beginning and end punctuation and whitespaces. 
     words_no_punctuation = list(map(lambda x: x.strip(string.punctuation + ' '), words))
+    #print(words_no_punctuation)
     
     # Remove stopwords and single-character words
     large_words = list(filter(lambda x: len(x) > 1, words_no_punctuation))
+    #print(large_words)
     words_no_stw = set(filter(lambda x: x.lower() not in STOP_WORDS, large_words))
-    
+    #print(words_no_stw)
     # Create dict with words and their positions in text
     words2pos = {}
     for word in words_no_stw:
@@ -299,15 +360,30 @@ def format_text_info(txt, min_upper):
         pos = list(map(lambda x: x.span(), occurrences))
         words2pos[word] = pos
         
-    # lowercase words and remove accents from words
+    #print(words2pos)
+    
+    # Dictionary relating original words with words processed
+    words2words = dict(zip(words_no_stw, words_no_stw))
+    words2words_processed = dict((k, remove_accents(k.lower())) if len(k) > min_upper else 
+                                (k,v) for k,v in words2words.items())
+    # Map original position to processed word
+    words_processed2pos = {}
+    for k, v in words2pos.items():
+        k_processed = words2words_processed[k]
+        if k_processed not in words_processed2pos:
+            words_processed2pos[k_processed] = v
+        else:
+            words_processed2pos[k_processed] = words_processed2pos[k_processed] + v
+    
+    '''# lowercase words and remove accents from words -> HERE I LOSE INFORMATION!
+    # If I have 'Sarcoma' and 'sarcoma', only one of the two of them is kept
     words_processed2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
-                                (k,v) for k,v in words2pos.items())
+                                (k,v) for k,v in words2pos.items())'''
     
     # Set of transformed words
     words_final = set(words_processed2pos)
     
     return words_final, words_processed2pos
-
 def store_prediction(pos_matrix, predictions, off0, off1, original_label, 
                      original_annot, txt):
                                         
@@ -330,8 +406,10 @@ def eliminate_contained_annots(pos_matrix, new_annotations, off0, off1):
               redundant, since the new one contains it. Then, the function
               removes the old annotation.
     '''
-    to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annotations))) if (off0<=item[0]) & (item[1]<=off1)]
-    new_annotations = [item for item, pos in zip(new_annotations, range(0, len(new_annotations))) if pos not in to_eliminate]
+    to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annotations))) 
+                    if (off0<=item[0]) & (item[1]<=off1)]
+    new_annotations = [item for item, pos in zip(new_annotations, range(0, len(new_annotations)))
+                       if pos not in to_eliminate]
     pos_matrix = [item for item in pos_matrix if not (off0<=item[0]) & (item[1]<=off1)]
     
     return pos_matrix, new_annotations
@@ -349,8 +427,14 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
     large_span = txt[max(0, span[0]-n_chars):min(span[1]+n_chars, len(txt))]
 
     # remove half-catched words
-    first_space = re.search('( |\n)', large_span).span()[1]
-    last_space = (len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0])
+    try:
+        first_space = re.search('( |\n)', large_span).span()[1]
+    except: 
+        first_space = 0
+    try:
+        last_space = (len(large_span) - re.search('( |\n)', large_span[::-1]).span()[0])
+    except:
+        last_space = len(large_span)
     large_span_reg = large_span[first_space:last_space]
     
     # Tokenize text span 
@@ -381,33 +465,52 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
     return predictions, pos_matrix
 
 def remove_redundant_suggestions(datapath):
+    '''
+    DESCRIPTION: 
+    Parameters
+    ----------
+    datapath : str
+        path to folder where Brat files are.
+    Returns
+    -------
+    c : int
+        Number of removed suggestions.
+    '''
+    c = 0
     for root, dirs, files in os.walk(datapath):
         for filename in files:
-            if filename[-3:] == 'ann': # get only ann files
-                f = open(os.path.join(root,filename)).readlines()
-                offsets = []
-                to_delete = []
-                
-                # 1. Get position of confirmed annotations
-                for line in f:
-                    if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
-                        splitted = line.split('\t')
-                        label_offset = splitted[1].split(' ')
-                        offsets.append([label_offset[1:][0], label_offset[1:][1]])
+            if filename[-3:]!= 'ann':
+                continue
+            # get only ann files
+            f = open(os.path.join(root,filename)).readlines()
+            offsets = []
+            to_delete = []
+            
+            # 1. Get position of confirmed annotations
+            for line in f:
+                if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
+                    splitted = line.split('\t')
+                    label_offset = splitted[1].split(' ')
+                    if ';' not in label_offset[1:][1]: # Do not store discontinuous annotations
+                        offsets.append([int(label_offset[1:][0]),
+                                        int(label_offset[1:][1])])
+                        
+            # 2.1 Get position of suggestions.
+            # 2.2 Check suggestions are not contained in any confirmed annotation
+            for line in f:
+                if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
+                    splitted = line.split('\t')
+                    label_offset = splitted[1].split(' ')
+                    new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
+                    if any(map(lambda x: ((x[0] <= new_offset[0]) &
+                                          (x[1] >= new_offset[1])), offsets)):
+                        to_delete.append(splitted[0])
+                        c = c +1
                             
-                # 2.1 Get position of suggestions.
-                # 2.2 Check suggestions are not contained in any confirmed annotation
+            # 3. Re-write ann without suggestions that were contained in a
+            # confirmed annotation
+            with open(os.path.join(root,filename), 'w') as fout:
                 for line in f:
-                    if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
-                        splitted = line.split('\t')
-                        label_offset = splitted[1].split(' ')
-                        new_offset = [label_offset[1:][0], label_offset[1:][1]]
-                        if any(map(lambda x: (x[0] <= new_offset[0]) & (x[1] >= new_offset[1]), offsets)):
-                            to_delete.append(splitted[0])
-                                
-                # 3. Re-write ann without suggestions that were contained in a
-                # confirmed annotation
-                with open(os.path.join(root,filename), 'w') as fout:
-                    for line in f:
-                        if line.split('\t')[0] not in to_delete:
-                            fout.write(line)
+                    if line.split('\t')[0] not in to_delete:
+                        fout.write(line)
+    return c
