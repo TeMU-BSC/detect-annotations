@@ -403,6 +403,51 @@ def format_text_info(txt, min_upper):
 
 def store_prediction(pos_matrix, predictions, off0, off1, original_label, 
                      original_annot, txt, code):
+    '''
+    1. Eliminate old predictions contained in the new one (if there were)
+    2. Update predictions and pos_matrix lists with new prediction
+
+    Parameters
+    ----------
+    pos_matrix : list
+        List with the positions of the stored predictions. 
+        One element per stored prediction (each element is a list of 2 integers)
+    predictions : list
+        List with the stored predictions. 
+        One element per stored prediction (every element is a list of 5:
+                                           text of prediction
+                                           starting position in document
+                                           end position in document
+                                           prediction label
+                                           prediction code)
+    off0 : TYPE
+        DESCRIPTION.
+    off1 : TYPE
+        DESCRIPTION.
+    original_label : TYPE
+        DESCRIPTION.
+    original_annot : TYPE
+        DESCRIPTION.
+    txt : TYPE
+        DESCRIPTION.
+    code : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    predictions : list
+        List with the stored predictions. 
+        One element per stored prediction (every element is a list of 5:
+                                           text of prediction
+                                           starting position in document
+                                           end position in document
+                                           prediction label
+                                           prediction code)
+    pos_matrix : list
+        List with the positions of the stored predictions. 
+        One element per stored prediction (each element is a list of 2 integers)
+
+    '''
                                         
     # 1. Eliminate old annotations if the new one contains them
     (pos_matrix, 
