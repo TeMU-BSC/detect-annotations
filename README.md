@@ -23,6 +23,7 @@ You need to have installed python3 and its base libraries, plus:
 
 ```
 git clone <repo_url>
+pip install -r requirements.txt
 ```
 
 ## Running the scripts
@@ -46,7 +47,7 @@ python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/i
 + **Input**: 
 	+ -d option: .ann and .txt files without suggestions.
 	+ -i option: annotation information (can be .ann and .txt files or a TSV with 3 columns: code, span and label).
-
+	+ --ignore_annots option: whether to ignore a custom list of forbidden annotations (the list must be changed in the code, sorry...).
 + **Output**: 
 	+ -o option. Output folder where new .ann and .txt files will be created. 
 	+ -O option. TSV file with the information contained in the parsed .ann files from -i option.
@@ -55,7 +56,7 @@ python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/i
 ##### To execute it: 
 ```
 cd detect_annotations/src
-python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -O /path/to/tsv.tsv
+python new_detection_method.py -i ../toy_data/ -d ../toy_data/ -o ../output/ -O ../formatted_annotations.tsv
 ```
 
 

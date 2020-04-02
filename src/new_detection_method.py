@@ -9,7 +9,7 @@ Created on Mon Nov 18 15:45:05 2019
 from utils.app_specific_utils import (parse_ann,parse_tsv,modify_copied_files,
                                       remove_redundant_suggestions,format_ann_info)
 
-from utils.general_utils import argparser, copy_dir_structure, copy_all_files
+from utils.general_utils import argparser, copy_dir_structure, copy_all_files, remove_accents
                             
 from detect_annotations import detect_annots, detect_annots_dummy
 
@@ -21,12 +21,12 @@ if __name__ == '__main__':
     valid_labels = ['MORFOLOGIA_NEOPLASIA']
     ignore_annots = ['marcador tumoral', 'marcadores tumorales', 
                      'marcador tumorales', 'marcadores tumoral', 
-                     'lesiones metastásicas', 'lesión metastásica',
-                     'enfermedad metastásica']
+                     'lesiones metastasicas', 'lesion metastasica',
+                     'enfermedad metastasica']
     
     ######## Parse command line arguments ########   
     print('\n\nParsing script arguments...\n\n')
-    datapath, information_path, out_path, out_path_df = argparser()
+    datapath, information_path, out_path, out_path_df, to_ignore = argparser()
     
     ######## GET ANN INFORMATION ########    
     # Get DataFrame
@@ -37,8 +37,11 @@ if __name__ == '__main__':
         df_annot, _ = parse_ann(information_path, out_path_df, valid_labels)
     
     # Remove annots
-    df_annot = df_annot.drop(df_annot[df_annot['span'].isin(ignore_annots)].index)
-    
+    if bool(to_ignore) == True:
+        span_new = df_annot['span']
+        span_new = span_new.apply(lambda x: remove_accents(x).lower())
+        df_annot = df_annot.drop(df_annot[span_new.isin(ignore_annots)].index)
+        
     ######## FORMAT ANN INFORMATION #########
     print('\n\nFormatting original annotations...\n\n')
     (file2annot, file2annot_processed, annot2label, 

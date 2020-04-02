@@ -192,8 +192,12 @@ def argparser():
     parser.add_argument("-o", "--output-brat", required =  True, 
                         dest="output_path_new_files", 
                         help = "absolute path to output brat files")
-    parser.add_argument("-O", "--output_tsv", required = True, dest = "output_path_df", 
+    parser.add_argument("-O", "--output_tsv", required = True, 
+                        dest = "output_path_df", 
                         help = "absolute path to output TSV")
+    parser.add_argument("-ig", "--ignore_annots", required = False, 
+                        default = True, dest = "ignore_annots", 
+                        help = "whether to ignore a predefined set of annotations")
     
     args = parser.parse_args()
     
@@ -201,8 +205,9 @@ def argparser():
     input_annotations = args.input_annot
     output_path_new_files = args.output_path_new_files
     output_path_df = args.output_path_df
+    to_ignore = args.ignore_annots
     
-    return datapath, input_annotations, output_path_new_files, output_path_df
+    return datapath, input_annotations, output_path_new_files, output_path_df, to_ignore
 
 
 def strip_punct(m_end, m_start, m_group, exit_bool):
