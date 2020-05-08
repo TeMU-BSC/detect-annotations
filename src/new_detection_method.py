@@ -169,7 +169,7 @@ if __name__ == '__main__':
     
     
     # Save TSV
-    annotations_not_in_ann.to_csv('annotations_not_in_ann.tsv', sep='\t', header = 0)
+    #annotations_not_in_ann.to_csv('annotations_not_in_ann.tsv', sep='\t', header = 0)
     ######### WRITE FILES #########   
     print('\n\nWriting new brat files...\n\n')
     # Create directory structure  

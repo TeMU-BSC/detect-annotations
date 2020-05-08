@@ -117,32 +117,39 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
     
     for root, dirs, files in os.walk(output_path_new_files):
         for filename in files:
-            if filename in files_new_annot:
-                if filename[-3:] == 'txt':       
-                    filename_ann = filename[0:-3]+ 'ann'
-                    #print(filename)
-                    # 1. Open .ann file & get highest mark
-                    with open(os.path.join(root,filename_ann),"r") as file:
-                        lines = file.readlines()
-                        if lines:
-                            # Get marks
-                            marks = list(map(lambda x: int(x.split('\t')[0][1:]),
-                                             filter(lambda x: x[0] == 'T', lines)))
-                        
-                            # 2. Get highest mark
-                            mark = max(marks)
-                        else:
-                            # 2. Get last mark
-                            mark = 0
+            if filename not in files_new_annot:
+                continue
+            if filename[-3:] != 'txt':
+                continue
+            filename_ann = filename[0:-3]+ 'ann'
+            
+            # Get highest mark in ann
+            if os.path.exists(os.path.join(root, filename_ann)) == 0:
+                mark = 0
+                mode = "w"
+            else:
+                with open(os.path.join(root,filename_ann),"r") as file:
+                    lines = file.readlines()
+                    if lines:
+                        # Get marks
+                        marks = list(map(lambda x: int(x.split('\t')[0][1:]),
+                                         filter(lambda x: x[0] == 'T', lines)))
                     
-                    # 3. Write new annotations
-                    new_annotations = annotations_not_in_ann[filename]
-                    with open(os.path.join(root,filename_ann),"a") as file:
-                        for a in new_annotations:
-                            mark = mark + 1
-                            file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
-                                       ' ' + str(a[1]) + ' ' + str(a[2]) + 
-                                       '\t' + a[0] + '\n')                            
+                        # 2. Get highest mark
+                        mark = max(marks)
+                    else:
+                        # 2. Get last mark
+                        mark = 0
+                mode = "a"
+           
+            # 2. Write new annotations
+            new_annotations = annotations_not_in_ann[filename]
+            with open(os.path.join(root,filename_ann),mode) as file:
+                for a in new_annotations:
+                    mark = mark + 1
+                    file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
+                               ' ' + str(a[1]) + ' ' + str(a[2]) + 
+                               '\t' + a[0] + '\n')                            
                             
 
 def parse_ann(datapath, output_path, valid_labels = []):
