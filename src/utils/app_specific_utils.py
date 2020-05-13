@@ -589,6 +589,7 @@ def remove_redundant_suggestions(datapath):
             # confirmed annotation
             with open(os.path.join(root,filename), 'w') as fout:
                 for line in f:
-                    if line.split('\t')[0] not in to_delete:
+                    if ((line.split('\t')[0] not in to_delete) & 
+                        (line.split('\t')[1].split(' ')[1] not in to_delete)):
                         fout.write(line)
     return c
