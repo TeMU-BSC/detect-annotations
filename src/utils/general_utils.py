@@ -14,33 +14,17 @@ import re
 import argparse
 from spacy.lang.es import Spanish
 
-<<<<<<< HEAD
-
 def tokenize(text):
     '''
     Tokenize a string in Spanish
-=======
-def tokenize(text):
-    '''
-    Tokenize a string in Spanish
-
->>>>>>> predict-codes
     Parameters
     ----------
     text : str
         Spanish text string to tokenize.
-<<<<<<< HEAD
-=======
-
->>>>>>> predict-codes
     Returns
     -------
     tokenized : list
         List of tokens (includes punctuation tokens).
-<<<<<<< HEAD
-=======
-
->>>>>>> predict-codes
     '''
     nlp = Spanish()
     doc = nlp(text)

@@ -10,11 +10,6 @@ import pandas as pd
 import os
 import string
 from spacy.lang.es import STOP_WORDS
-<<<<<<< HEAD
-from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
-                                 tokenize, normalize_str)
-=======
->>>>>>> predict-codes
 import re
 from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
                                  tokenize, normalize_str)
@@ -31,10 +26,6 @@ def tokenize_span(text, n_words):
     text: string
     n_words: int 
         It is the maximum number of tokens I want in a token combination.
-<<<<<<< HEAD
-=======
-
->>>>>>> predict-codes
     Returns
     -------
     token_span2id: python dict 
@@ -54,8 +45,8 @@ def tokenize_span(text, n_words):
             exit_bool = 0
             
             # remove final and initial punctuation
-            m_end, m_start, m_group, exit_bool = strip_punct(m.end(), m.start(),
-                                                             m.group(), exit_bool)
+            m_end, m_start, m_group, exit_bool = \
+                strip_punct(m.end(), m.start(), m.group(), exit_bool)
                 
             # fill dictionary
             if m_group in tokens2pos.keys():
@@ -65,9 +56,8 @@ def tokenize_span(text, n_words):
             m_last = m_group
         
     # Obtain token combinations
-    id2token_span, id2token_span_pos, token_spans = adjacent_combs(text, 
-                                                                   tokens2pos,
-                                                                   n_words)
+    id2token_span, id2token_span_pos, token_spans = \
+        adjacent_combs(text, tokens2pos, n_words)
     
     # Reverse dict (no problem, keys and values are unique)
     token_span2id = {' '.join(v): k for k, v in id2token_span.items()}
@@ -84,16 +74,9 @@ def normalize_tokens(tokens, min_upper):
     Parameters
     ----------
     tokens: list
-<<<<<<< HEAD
     min_upper: int. S
         It specifies the minimum number of characters of a word to lowercase
         it (to prevent mistakes with acronyms).
-=======
-    min_upper: int.
-        It specifies the minimum number of characters of a word to lowercase
-        it (to prevent mistakes with acronyms).
-
->>>>>>> predict-codes
     Returns
     -------
     token_processed2token: python dict 
@@ -103,19 +86,11 @@ def normalize_tokens(tokens, min_upper):
     
     # Lowercase
     token_lower2token = dict((k.lower(), v) if len(k) > min_upper else 
-<<<<<<< HEAD
                              (k,v) for k,v in token2token.items())
 
     # Remove whitespaces
     token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
                           in token_lower2token.items())
-=======
-                                       (k,v) for k,v in token2token.items())
-
-    # Remove whitespaces
-    token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
-                                    in token_lower2token.items())
->>>>>>> predict-codes
 
     # Remove punctuation
     token_punc2token = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_bs2token.items())
@@ -131,13 +106,6 @@ def modify_copied_files(new_annots, out_path, with_notes=False):
     
     Parameters
     ----------
-<<<<<<< HEAD
-    annotations_not_in_ann: python dict 
-        It has new annotations and the file they belong to. 
-        {filename: [annotation1, annotatio2, ]}
-    output_path_new_files: str. 
-        Path to files.
-=======
     new_annots: python dict 
         It has new annotations and the file they belong to. 
         {filename: [annotation1, annotatio2, ]}
@@ -145,7 +113,6 @@ def modify_copied_files(new_annots, out_path, with_notes=False):
         Path to files.
     with_notes: bool
         whether we are predicting codes, or not
->>>>>>> predict-codes
     '''
     files_new_annot = list(new_annots.keys())
     
@@ -175,139 +142,22 @@ def modify_copied_files(new_annots, out_path, with_notes=False):
                         # 2. Get last mark
                         mark = 0
                 mode = "a"
-<<<<<<< HEAD
            
-            # 2. Write new annotations
-            new_annotations = annotations_not_in_ann[filename]
+            # 2. Write new annotationsgit 
+            new_annotations = new_annots[filename]
             with open(os.path.join(root,filename_ann),mode) as file:
                 for a in new_annotations:
                     mark = mark + 1
                     file.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + 
                                ' ' + str(a[1]) + ' ' + str(a[2]) + 
-                               '\t' + a[0] + '\n')                            
-                            
-
-def parse_ann(datapath, output_path, valid_labels = []):
-    '''
-    DESCRIPTION: parse information in .ann files.
-    
-    Parameters
-    ----------
-    datapath: str. 
-        Route to the folder where the files are. 
-    output_path: str. 
-        Path to output TSV where information will be stored.
-           
-    Returns
-    -------
-    df: pandas DataFrame 
-        It has information from ann files. Columns: 'annotator', 'bunch',
-        'filename', 'mark', 'label', 'offset1', 'offset2', 'span', 'code'
-    filenames: list 
-        list of filenames
-    '''
-    
-    start = time.time()
-    info = []
-    c = 0
-    ## Iterate over the files and parse them
-    filenames = []
-    for root, dirs, files in os.walk(datapath):
-         for filename in files:
-             if filename[-3:] != 'ann':
-                 continue
-             # get only ann files
-               
-             f = open(os.path.join(root,filename)).readlines()
-             filenames.append(filename)
-             # Get annotator and bunch
-             bunch = root.split('/')[-1]
-             annotator = root.split('/')[-2][-1]
-            
-             # Parse .ann file
-             for line in f:
-                 if line[0] == 'T':
-                     splitted = line.split('\t')
-                     if len(splitted)<3:
-                         print('Line with less than 3 tabular splits:')
-                         print(root + filename)
-                         print(line)
-                         print(splitted)
-                     if len(splitted)>3:
-                         print('Line with more than 3 tabular splits:')
-                         print(root + filename)
-                         print(line)
-                         print(splitted)
-                     mark = splitted[0]
-                     label_offset = splitted[1].split(' ')
-                     label = label_offset[0]
-                     offset = label_offset[1:]
-                     span = splitted[2].strip()
-                     if len(offset)>2:
-                         c = c +1
-                         pass
-                     else:
-                         info.append([annotator, bunch, filename, mark, label,
-                                      offset[0], offset[-1], 
-                                      span.strip(string.punctuation)])
-                     
-    end = time.time()
-    print("Elapsed time: " + str(round(end-start, 2)) + 's')
-    
-    # Save parsed .ann files
-    df = pd.DataFrame(info, columns=['annotator', 'bunch', 'filename', 'mark',
-                                     'label', 'offset1', 'offset2', 'span'])
-    df.to_csv(output_path, sep='\t',index=False)
-    
-    print('Number of discontinuous annotations: {}'.format(c))
-    return df, filenames
-
-def parse_tsv(input_path_old_files):
-    '''
-    DESCRIPTION: Get information from ann that was already stored in a TSV file.
-    
-    Parameters
-    ----------
-    input_path_old_files: string
-        path to TSV file with columns: ['annotator', 'bunch', 'filename', 
-        'mark','label', 'offset1', 'offset2', 'span']
-        Additionally, we can also have the path to a 3 column TSV: ['filename', 'label', 'span']
-    
-    Returns
-    -------
-    df_annot: pandas DataFrame
-        It has 3 columns: 'filename', 'label', 'span'.
-    '''
-    
-    df_annot = pd.read_csv(input_path_old_files, sep='\t', header=None)
-    if len(df_annot.columns) == 8:
-        df_annot.columns=['annotator', 'bunch', 'filename', 'mark',
-                      'label', 'offset1', 'offset2', 'span']
-    else:
-        df_annot.columns = ['filename', 'label', 'span']
-    return df_annot
-
-
-def format_ann_info(df_annot, min_upper):
-=======
-            # 2. Write new annotations
-            new_annotations = new_annots[filename]
-            file_ = open(os.path.join(root,filename_ann),mode)
-            for a in new_annotations:
-                mark = mark + 1
-                file_.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + ' ' +
-                            str(a[1]) + ' ' + str(a[2]) + '\t' + a[0] + '\n') 
-                if with_notes==False:
-                    continue
-                file_.write('#' + str(mark) + '\t' + 'AnnotatorNotes' +
-                           ' T' + str(mark) + '\t' + a[4] + '\n') 
-            file_.close()
-                            
-
+                               '\t' + a[0] + '\n') 
+                    if with_notes == False:
+                        continue
+                    file.write('#' + str(mark) + '\t' + 'AnnotatorNotes' +
+                               ' T' + str(mark) + '\t' + a[4] + '\n')                            
 
 
 def format_ann_info(df_annot, min_upper, with_notes=False):
->>>>>>> predict-codes
     '''
     DESCRIPTION: Build useful Python dicts from DataFrame with info from TSV file
     
@@ -318,13 +168,9 @@ def format_ann_info(df_annot, min_upper, with_notes=False):
     min_upper: int. 
         It specifies the minimum number of characters of a word to lowercase 
         it (to prevent mistakes with acronyms).
-<<<<<<< HEAD
-    
-=======
     with_notes: bool
         whether we are predicting codes, or not
         
->>>>>>> predict-codes
     Returns
     -------
     file2annot: python dict
@@ -446,14 +292,6 @@ def format_text_info(txt, min_upper):
             words_processed2pos[k_processed] = v
         else:
             words_processed2pos[k_processed] = words_processed2pos[k_processed] + v
-<<<<<<< HEAD
-    
-    '''# lowercase words and remove accents from words -> HERE I LOSE INFORMATION!
-    # If I have 'Sarcoma' and 'sarcoma', only one of the two of them is kept
-    words_processed2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
-                                (k,v) for k,v in words2pos.items())'''
-=======
->>>>>>> predict-codes
     
     # Set of transformed words
     words_final = set(words_processed2pos)
@@ -528,15 +366,9 @@ def eliminate_contained_annots(pos_matrix, new_annots, off0, off1):
               discovered annotation (smaller). In that case, the old (smaller)
               annotation is removed
     '''
-<<<<<<< HEAD
-    to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annotations))) 
-                    if (off0<=item[0]) & (item[1]<=off1)]
-    new_annotations = [item for item, pos in zip(new_annotations, range(0, len(new_annotations)))
-=======
     to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annots))) 
                     if (off0<=item[0]) & (item[1]<=off1)]
     new_annots = [item for item, pos in zip(new_annots, range(0, len(new_annots)))
->>>>>>> predict-codes
                        if pos not in to_eliminate]
     pos_matrix = [item for item in pos_matrix if not (off0<=item[0]) & (item[1]<=off1)]
     
@@ -599,18 +431,11 @@ def remove_redundant_suggestions(datapath):
     ----------
     datapath : str
         path to folder where Brat files are.
-<<<<<<< HEAD
-=======
 
->>>>>>> predict-codes
     Returns
     -------
     c : int
         Number of removed suggestions.
-<<<<<<< HEAD
-=======
-
->>>>>>> predict-codes
     '''
     c = 0
     for root, dirs, files in os.walk(datapath):
@@ -619,10 +444,7 @@ def remove_redundant_suggestions(datapath):
                 continue
             # get only ann files
             f = open(os.path.join(root,filename)).readlines()
-<<<<<<< HEAD
-=======
-            #print(os.path.join(root, filename))
->>>>>>> predict-codes
+
             offsets = []
             to_delete = []
             
@@ -642,13 +464,9 @@ def remove_redundant_suggestions(datapath):
                     splitted = line.split('\t')
                     label_offset = splitted[1].split(' ')
                     new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
-<<<<<<< HEAD
-                    if any(map(lambda x: ((x[0] <= new_offset[0]) &
-                                          (x[1] >= new_offset[1])), offsets)):
-=======
+
                     if any(map(lambda x: (x[0] <= new_offset[0]) & 
                                (x[1] >= new_offset[1]), offsets)):
->>>>>>> predict-codes
                         to_delete.append(splitted[0])
                         c = c +1
                             
@@ -656,11 +474,7 @@ def remove_redundant_suggestions(datapath):
             # confirmed annotation
             with open(os.path.join(root,filename), 'w') as fout:
                 for line in f:
-<<<<<<< HEAD
-                    if line.split('\t')[0] not in to_delete:
-=======
                     if ((line.split('\t')[0] not in to_delete) & 
                         (line.split('\t')[1].split(' ')[1] not in to_delete)):
->>>>>>> predict-codes
                         fout.write(line)
     return c

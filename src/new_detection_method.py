@@ -59,18 +59,9 @@ if __name__ == '__main__':
    
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
-<<<<<<< HEAD
-    #print(annotations_not_in_ann)
-=======
-    #print(detected_annots)
-       
->>>>>>> predict-codes
-    
+
     # TODO: remove annotations with \n inside them
     
-    
-    # Save TSV
-    #annotations_not_in_ann.to_csv('annotations_not_in_ann.tsv', sep='\t', header = 0)
     ######### WRITE FILES #########   
     print('\n\nWriting new brat files...\n\n')
     # Create directory structure  
