@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ## Running the scripts
 
 ```
-cd detect_annotations/src
+cd detect-annotations/src
 python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/information/ -o /path/to/output/folder/ -ig bool -c bool
 ```
 
@@ -48,7 +48,7 @@ python new_detection_method.py -d /path/to/input/text/files/ -i /path/to/input/i
 
 ##### To execute it: 
 ```
-cd detect_annotations/src
+cd detect-annotations/src
 python new_detection_method.py -i ../toy_data/ -d ../toy_data/ -o ../output/ -ig False -c True
 ```
 
