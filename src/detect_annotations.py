@@ -16,7 +16,7 @@ from utils.general_utils import Flatten
 
 
 def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
-                         file2annot, annot2label, annot2annot_processed):
+                  file2annot, annot2label, annot2annot_processed, with_notes=False):
     '''
     
     Parameters
@@ -83,55 +83,44 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
             # Generate candidates
             words_common = words_txt.intersection(words_annots)
                 
-            #### 4. For every token of the intersection, get all original 
-            #### annotations associated to it and all matches in text.
+            #### 4. For common word, get all original annotations that contain
+            #### that word and all matches in text.
             #### Then, check surroundings of all those matches to check if any
-            #### of the original annotations is in the text ####
+            #### of the original annotations is actually in the text ####
             for match in sorted(words_common):
-                #print(new_annotations)
-                #print('--------------')
-                #print(match)
                 
                 # Get annotations where this token is present
-                original_annotations = set([k for k,v in annot2annot_processed.items() if match in v])
+                original_annotations = set([k for k,v in annot2annot_processed.items()\
+                                            if match in v])
                 # Get text locations where this token is present
                 match_text_locations = words_processed2pos[match]
-                #print(match_text_locations)
-                #print(words_processed2pos)
-                #print(len(original_annotations))
-                #print(sorted(original_annotations))
                  
                 # For every original annotation where this token is present:
                 for original_annot in sorted(original_annotations):
-                    #if len(original_annot) <30:
-                    #    print(original_annot)
+                    # Get original label
                     original_label = annot2label[original_annot]
-                    original_text_locations = words_processed2pos[match]
+
                     n_chars = len(original_annot)
                     n_words = len(original_annot.split())
                     
                     if n_words > 1:
+                        if with_notes==True:
+                            code = annot2code[original_annot][0] # right now, only put first code
+                        else:
+                            code = '#$NOCODE$#'
                         # For every match of the token in text, check its 
                         # surroundings and generate predictions
-                        code = annot2code[original_annot][0] # right now, only put first code
                         for span in match_text_locations:
-                            #if len(original_annot) <30:
-                            #    print(span)
-                            (new_annotations, 
-                             pos_matrix) = check_surroundings(txt, span, 
-                                                              original_annot,
-                                                              n_chars, n_words,
-                                                              original_label,
-                                                              new_annotations,
-                                                              pos_matrix, min_upper,
-                                                              code)
+                            new_annotations, pos_matrix = \
+                                check_surroundings(txt, span, original_annot,
+                                                   n_chars, n_words, original_label,
+                                                   new_annotations, pos_matrix, 
+                                                   min_upper, code)
                           
-                    # If original_annotation is just the token, no need to 
-                    # check the surroundings
+                    # If original_annotation is just one token, no need to 
+                    # check the surroundings!
                     elif n_words == 1:
-                        for span in original_text_locations:
-                            #if len(original_annot) <30:
-                            #    print(span)
+                        for span in match_text_locations:
                             # Check span is surrounded by spaces or punctuation signs &
                             # span is not contained in a previously stored prediction
                             if (((txt[span[0]-1].isalnum() == False) &
@@ -141,14 +130,14 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
                                 
                                 # STORE PREDICTION and eliminate old predictions
                                 # contained in the new one.
-                                code = annot2code[original_annot][0] # right now, only put first code
-                                (new_annotations, 
-                                 pos_matrix) = store_prediction(pos_matrix, 
-                                                                new_annotations,
-                                                                span[0], span[1], 
-                                                                original_label,
-                                                                original_annot,
-                                                                txt, code)
+                                if with_notes==True:
+                                    code = annot2code[original_annot][0] # right now, only put first code
+                                else:
+                                    code = '#$NOCODE$#'
+                                new_annotations, pos_matrix = \
+                                    store_prediction(pos_matrix, new_annotations,
+                                                     span[0], span[1], original_label,
+                                                     original_annot, txt, code)
                     
             ## 4. Remove duplicates ##
             new_annotations.sort()
@@ -176,7 +165,8 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
 
 
 def detect_annots_dummy(datapath, min_upper, annot2code, file2annot_processed,
-                         file2annot, annot2label, annot2annot_processed):
+                         file2annot, annot2label, annot2annot_processed,
+                         with_notes=False):
     '''
     Does the same as the previous one but the search is much simple. Simply a
     re.findall(text, annotation)
@@ -258,19 +248,27 @@ def detect_annots_dummy(datapath, min_upper, annot2code, file2annot_processed,
                 # For every original annotation where this token is present:
                 for original_annot in original_annotations:
                     original_label = annot2label[original_annot]
-                    code = annot2code[original_annot][0]
+                    if with_notes==True:
+                        code = annot2code[original_annot][0]
+                    else:
+                        code = '#$NOCODE$#'
                     if txt.find(original_annot.strip()) > -1:
                         l = len(original_annot.strip())
-                        for m in re.finditer(r"[^a-zA-Z_]" +
+                        for m in re.finditer(r"[^a-zA-Z_]" + 
                                              original_annot.strip() +
                                              r"[^a-zA-Z_]", txt):
                             
                             pos0 = m.start() + m.group().find(original_annot.strip())
                             pos1 = pos0 + l
                             
-                            new_annotations.append([original_annot.strip(),
+                            if code != '#$NOCODE$#':
+                                new_annotations.append([original_annot.strip(),
                                                     pos0, pos1, original_label,
                                                     code])
+                            else:
+                                new_annotations.append([original_annot.strip(),
+                                                    pos0, pos1, original_label])
+                                
                             pos_matrix.append([pos0, pos1])
                         
                     
