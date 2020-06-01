@@ -8,12 +8,17 @@ Created on Wed Jan 15 18:24:28 2020
 
 import pandas as pd
 import os
-import time
 import string
 from spacy.lang.es import STOP_WORDS
+<<<<<<< HEAD
 from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
                                  tokenize, normalize_str)
+=======
+>>>>>>> predict-codes
 import re
+from utils.general_utils import (remove_accents, adjacent_combs, strip_punct, 
+                                 tokenize, normalize_str)
+
 
 
 def tokenize_span(text, n_words):
@@ -26,6 +31,10 @@ def tokenize_span(text, n_words):
     text: string
     n_words: int 
         It is the maximum number of tokens I want in a token combination.
+<<<<<<< HEAD
+=======
+
+>>>>>>> predict-codes
     Returns
     -------
     token_span2id: python dict 
@@ -75,9 +84,16 @@ def normalize_tokens(tokens, min_upper):
     Parameters
     ----------
     tokens: list
+<<<<<<< HEAD
     min_upper: int. S
         It specifies the minimum number of characters of a word to lowercase
         it (to prevent mistakes with acronyms).
+=======
+    min_upper: int.
+        It specifies the minimum number of characters of a word to lowercase
+        it (to prevent mistakes with acronyms).
+
+>>>>>>> predict-codes
     Returns
     -------
     token_processed2token: python dict 
@@ -87,11 +103,19 @@ def normalize_tokens(tokens, min_upper):
     
     # Lowercase
     token_lower2token = dict((k.lower(), v) if len(k) > min_upper else 
+<<<<<<< HEAD
                              (k,v) for k,v in token2token.items())
 
     # Remove whitespaces
     token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
                           in token_lower2token.items())
+=======
+                                       (k,v) for k,v in token2token.items())
+
+    # Remove whitespaces
+    token_bs2token = dict((re.sub('\s+', ' ', k).strip(), v) for k,v 
+                                    in token_lower2token.items())
+>>>>>>> predict-codes
 
     # Remove punctuation
     token_punc2token = dict((k.translate(str.maketrans('', '', string.punctuation)), v) for k,v in token_bs2token.items())
@@ -101,21 +125,31 @@ def normalize_tokens(tokens, min_upper):
     
     return token_processed2token
 
-def modify_copied_files(annotations_not_in_ann, output_path_new_files):
+def modify_copied_files(new_annots, out_path, with_notes=False):
     '''
     DESCRIPTION: add suggestions (newly discovered annotations) to ann files.
     
     Parameters
     ----------
+<<<<<<< HEAD
     annotations_not_in_ann: python dict 
         It has new annotations and the file they belong to. 
         {filename: [annotation1, annotatio2, ]}
     output_path_new_files: str. 
         Path to files.
+=======
+    new_annots: python dict 
+        It has new annotations and the file they belong to. 
+        {filename: [annotation1, annotatio2, ]}
+    out_path: str
+        Path to files.
+    with_notes: bool
+        whether we are predicting codes, or not
+>>>>>>> predict-codes
     '''
-    files_new_annot = list(annotations_not_in_ann.keys())
+    files_new_annot = list(new_annots.keys())
     
-    for root, dirs, files in os.walk(output_path_new_files):
+    for root, dirs, files in os.walk(out_path):
         for filename in files:
             if filename not in files_new_annot:
                 continue
@@ -141,6 +175,7 @@ def modify_copied_files(annotations_not_in_ann, output_path_new_files):
                         # 2. Get last mark
                         mark = 0
                 mode = "a"
+<<<<<<< HEAD
            
             # 2. Write new annotations
             new_annotations = annotations_not_in_ann[filename]
@@ -254,6 +289,25 @@ def parse_tsv(input_path_old_files):
 
 
 def format_ann_info(df_annot, min_upper):
+=======
+            # 2. Write new annotations
+            new_annotations = new_annots[filename]
+            file_ = open(os.path.join(root,filename_ann),mode)
+            for a in new_annotations:
+                mark = mark + 1
+                file_.write('T' + str(mark) + '\t' + '_SUG_' +  a[3] + ' ' +
+                            str(a[1]) + ' ' + str(a[2]) + '\t' + a[0] + '\n') 
+                if with_notes==False:
+                    continue
+                file_.write('#' + str(mark) + '\t' + 'AnnotatorNotes' +
+                           ' T' + str(mark) + '\t' + a[4] + '\n') 
+            file_.close()
+                            
+
+
+
+def format_ann_info(df_annot, min_upper, with_notes=False):
+>>>>>>> predict-codes
     '''
     DESCRIPTION: Build useful Python dicts from DataFrame with info from TSV file
     
@@ -264,7 +318,13 @@ def format_ann_info(df_annot, min_upper):
     min_upper: int. 
         It specifies the minimum number of characters of a word to lowercase 
         it (to prevent mistakes with acronyms).
+<<<<<<< HEAD
     
+=======
+    with_notes: bool
+        whether we are predicting codes, or not
+        
+>>>>>>> predict-codes
     Returns
     -------
     file2annot: python dict
@@ -282,6 +342,11 @@ def format_ann_info(df_annot, min_upper):
     set_annotations = set(df_annot.span)
     
     annot2label = dict(zip(df_annot.span,df_annot.label))
+    
+    if with_notes==True:
+        annot2code = df_annot.groupby('span')['code'].apply(lambda x: x.tolist()).to_dict()
+    else:
+        annot2code = {}
     
     annot2annot = dict(zip(set_annotations, set_annotations))
     
@@ -316,7 +381,7 @@ def format_ann_info(df_annot, min_upper):
         aux = list(map(lambda x:annot2annot_processed[x], v))
         file2annot_processed[k] = aux
 
-    return file2annot, file2annot_processed, annot2label, annot2annot_processed
+    return file2annot, file2annot_processed, annot2label, annot2annot_processed, annot2code
 
 
 def format_text_info(txt, min_upper):
@@ -381,49 +446,105 @@ def format_text_info(txt, min_upper):
             words_processed2pos[k_processed] = v
         else:
             words_processed2pos[k_processed] = words_processed2pos[k_processed] + v
+<<<<<<< HEAD
     
     '''# lowercase words and remove accents from words -> HERE I LOSE INFORMATION!
     # If I have 'Sarcoma' and 'sarcoma', only one of the two of them is kept
     words_processed2pos = dict((remove_accents(k.lower()), v) if len(k) > min_upper else 
                                 (k,v) for k,v in words2pos.items())'''
+=======
+>>>>>>> predict-codes
     
     # Set of transformed words
     words_final = set(words_processed2pos)
     
     return words_final, words_processed2pos
 def store_prediction(pos_matrix, predictions, off0, off1, original_label, 
-                     original_annot, txt):
+                     original_annot, txt, code):
+    '''
+    1. Eliminate old predictions contained in the new one (if there were)
+    2. Update predictions and pos_matrix lists with new prediction
+
+    Parameters
+    ----------
+    pos_matrix : list
+        List with the positions of the stored predictions. 
+        One element per stored prediction (each element is a list of 2 integers)
+    predictions : list
+        List with the stored predictions. 
+        One element per stored prediction (every element is a list of 5:
+                                           text of prediction
+                                           starting position in document
+                                           end position in document
+                                           prediction label
+                                           prediction code)
+    off0 : int
+        Starting position of prediction in text.
+    off1 : int
+        Ending position of prediction in text..
+    original_label : str
+        Label of prediction in text.
+    original_annot : str
+        Original annotation.
+    txt : str
+        Text where the prediction is found.
+    code : str
+        Prediction code.
+
+    Returns
+    -------
+    predictions : list
+        List with the stored predictions. 
+        One element per stored prediction (every element is a list of 5:
+                                           text of prediction
+                                           starting position in document
+                                           end position in document
+                                           prediction label
+                                           prediction code)
+    pos_matrix : list
+        List with the positions of the stored predictions. 
+        One element per stored prediction (each element is a list of 2 integers)
+
+    '''
                                         
     # 1. Eliminate old annotations if the new one contains them
-    (pos_matrix, 
-     predictions) = eliminate_contained_annots(pos_matrix, predictions, off0, off1)
+    pos_matrix, predictions = \
+        eliminate_contained_annots(pos_matrix, predictions, off0, off1)
     
     # 2. STORE NEW PREDICTION
-    predictions.append([txt[off0:off1], off0, off1, original_label])   
+    if code != '#$NOCODE$#':
+        predictions.append([txt[off0:off1], off0, off1, original_label, code])
+    else:
+        predictions.append([txt[off0:off1], off0, off1, original_label])
     pos_matrix.append([off0, off1])
-        
+                
     return predictions, pos_matrix
 
 
-def eliminate_contained_annots(pos_matrix, new_annotations, off0, off1):
+def eliminate_contained_annots(pos_matrix, new_annots, off0, off1):
     '''
     DESCRIPTION: function to be used when a new annotation is found. 
               It check whether this new annotation contains in it an already 
-              discovered annotation. In that case, the old annotation is 
-              redundant, since the new one contains it. Then, the function
-              removes the old annotation.
+              discovered annotation (smaller). In that case, the old (smaller)
+              annotation is removed
     '''
+<<<<<<< HEAD
     to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annotations))) 
                     if (off0<=item[0]) & (item[1]<=off1)]
     new_annotations = [item for item, pos in zip(new_annotations, range(0, len(new_annotations)))
+=======
+    to_eliminate = [pos for item, pos in zip(pos_matrix, range(0, len(new_annots))) 
+                    if (off0<=item[0]) & (item[1]<=off1)]
+    new_annots = [item for item, pos in zip(new_annots, range(0, len(new_annots)))
+>>>>>>> predict-codes
                        if pos not in to_eliminate]
     pos_matrix = [item for item in pos_matrix if not (off0<=item[0]) & (item[1]<=off1)]
     
-    return pos_matrix, new_annotations
+    return pos_matrix, new_annots
 
 
-def check_surroundings(txt, span, original_annot, n_chars, n_words, original_label,
-                       predictions, pos_matrix, min_upper):
+def check_surroundings(txt, span, original_annot, n_chars, n_words, 
+                       original_label, predictions, pos_matrix,min_upper,code):
     '''
     DESCRIPTION: explore the surroundings of the match.
               Do not care about extra whitespaces or punctuation signs in 
@@ -445,8 +566,8 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
     large_span_reg = large_span[first_space:last_space]
     
     # Tokenize text span 
-    token_span2id, id2token_span_pos, token_spans = tokenize_span(large_span_reg,
-                                                                  n_words)
+    token_span2id, id2token_span_pos, token_spans = \
+        tokenize_span(large_span_reg, n_words)
     # Normalize
     original_annotation_processed = normalize_str(original_annot, min_upper)
     token_span_processed2token_span = normalize_tokens(token_spans, min_upper)
@@ -459,13 +580,13 @@ def check_surroundings(txt, span, original_annot, n_chars, n_words, original_lab
         off0 = (pos[0] + first_space + max(0, span[0]-n_chars))
         off1 = (pos[1] + first_space + max(0, span[0]-n_chars))
         
-        # Check new annotation is not contained in a previously stored new annotation
+        # Check new annotation (smaller) is not contained in a previously 
+        # stored new annotation (larger)
         if not any([(item[0]<=off0) & (off1<= item[1]) for item in pos_matrix]):
             # STORE PREDICTION and eliminate old predictions contained in the new one.
-            predictions, pos_matrix = store_prediction(pos_matrix, predictions,
-                                                       off0, off1, 
-                                                       original_label,
-                                                       original_annot, txt)
+            predictions, pos_matrix = \
+                store_prediction(pos_matrix, predictions, off0, off1, 
+                                 original_label, original_annot, txt, code)
     except: 
         pass
     
@@ -478,10 +599,18 @@ def remove_redundant_suggestions(datapath):
     ----------
     datapath : str
         path to folder where Brat files are.
+<<<<<<< HEAD
+=======
+
+>>>>>>> predict-codes
     Returns
     -------
     c : int
         Number of removed suggestions.
+<<<<<<< HEAD
+=======
+
+>>>>>>> predict-codes
     '''
     c = 0
     for root, dirs, files in os.walk(datapath):
@@ -490,6 +619,10 @@ def remove_redundant_suggestions(datapath):
                 continue
             # get only ann files
             f = open(os.path.join(root,filename)).readlines()
+<<<<<<< HEAD
+=======
+            #print(os.path.join(root, filename))
+>>>>>>> predict-codes
             offsets = []
             to_delete = []
             
@@ -509,8 +642,13 @@ def remove_redundant_suggestions(datapath):
                     splitted = line.split('\t')
                     label_offset = splitted[1].split(' ')
                     new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
+<<<<<<< HEAD
                     if any(map(lambda x: ((x[0] <= new_offset[0]) &
                                           (x[1] >= new_offset[1])), offsets)):
+=======
+                    if any(map(lambda x: (x[0] <= new_offset[0]) & 
+                               (x[1] >= new_offset[1]), offsets)):
+>>>>>>> predict-codes
                         to_delete.append(splitted[0])
                         c = c +1
                             
@@ -518,6 +656,11 @@ def remove_redundant_suggestions(datapath):
             # confirmed annotation
             with open(os.path.join(root,filename), 'w') as fout:
                 for line in f:
+<<<<<<< HEAD
                     if line.split('\t')[0] not in to_delete:
+=======
+                    if ((line.split('\t')[0] not in to_delete) & 
+                        (line.split('\t')[1].split(' ')[1] not in to_delete)):
+>>>>>>> predict-codes
                         fout.write(line)
     return c

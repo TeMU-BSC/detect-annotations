@@ -14,18 +14,33 @@ import re
 import argparse
 from spacy.lang.es import Spanish
 
+<<<<<<< HEAD
 
 def tokenize(text):
     '''
     Tokenize a string in Spanish
+=======
+def tokenize(text):
+    '''
+    Tokenize a string in Spanish
+
+>>>>>>> predict-codes
     Parameters
     ----------
     text : str
         Spanish text string to tokenize.
+<<<<<<< HEAD
+=======
+
+>>>>>>> predict-codes
     Returns
     -------
     tokenized : list
         List of tokens (includes punctuation tokens).
+<<<<<<< HEAD
+=======
+
+>>>>>>> predict-codes
     '''
     nlp = Spanish()
     doc = nlp(text)
@@ -94,8 +109,7 @@ def copy_all_files(datapath, output_path_new_files):
     for root, dirs, files in os.walk(datapath):
         for filename in files:
             copyfile(os.path.join(root,filename), 
-                     os.path.join(output_path_new_files,
-                                  root[len(datapath):],
+                     os.path.join(output_path_new_files, root[len(datapath):],
                                   filename))
             
             
@@ -183,24 +197,29 @@ def argparser():
     '''
     
     parser = argparse.ArgumentParser(description='process user given parameters')
-    parser.add_argument("-i", "--input-annot", required = True, dest = "input_annot", 
-                        help = "absolute path to already annotated brat files or TSV with 4 columns: filename, label, span")
     parser.add_argument("-d", "--datapath", required = True, dest = "datapath", 
                         help = "absolute path to already brat files")
+    parser.add_argument("-i", "--input_info", required = True, dest = "input_info", 
+                        help = "absolute path to already annotated brat files or TSV with 4 columns: filename, label, span")
     parser.add_argument("-o", "--output-brat", required =  True, 
                         dest="output_path_new_files", 
                         help = "absolute path to output brat files")
-    parser.add_argument("-O", "--output_tsv", required = True, dest = "output_path_df", 
-                        help = "absolute path to output TSV")
+    parser.add_argument("-ig", "--ignore_annots", required = False, 
+                        default = True, dest = "ignore_annots", 
+                        help = "whether to ignore a predefined set of annotations")
+    parser.add_argument("-c", "--predict-codes", required = False, 
+                        default = True, dest = "predict_codes", 
+                        help = "whether we take into account annotation codes")
     
     args = parser.parse_args()
     
     datapath = args.datapath
-    input_annotations = args.input_annot
-    output_path_new_files = args.output_path_new_files
-    output_path_df = args.output_path_df
+    input_info = args.input_info
+    out_path = args.output_path_new_files
+    to_ignore = bool(int(args.ignore_annots))
+    with_notes = bool(int(args.predict_codes))
     
-    return datapath, input_annotations, output_path_new_files, output_path_df
+    return datapath, input_info, out_path, to_ignore, with_notes
 
 
 def strip_punct(m_end, m_start, m_group, exit_bool):
