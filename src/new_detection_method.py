@@ -24,8 +24,7 @@ if __name__ == '__main__':
     ######## Parse command line arguments ########   
     print('\n\nParsing script arguments...\n\n')
     datapath, information_path, out_path, to_ignore, with_notes = argparser()
-    print(with_notes)
-    print(type(with_notes))
+
     ######## Parse INFORMATION ########    
     # Get DataFrame
     print('\n\nObtaining original annotations...\n\n')

@@ -189,10 +189,10 @@ def argparser():
                         dest="output_path_new_files", 
                         help = "absolute path to output brat files")
     parser.add_argument("-ig", "--ignore_annots", required = False, 
-                        default = True, dest = "ignore_annots", 
+                        default = True, dest = "ignore_annots", choices=['1','0'], 
                         help = "whether to ignore a predefined set of annotations")
     parser.add_argument("-c", "--predict-codes", required = False, 
-                        default = True, dest = "predict_codes", 
+                        default = True, dest = "predict_codes", choices=['1','0'],
                         help = "whether we take into account annotation codes")
     
     args = parser.parse_args()
