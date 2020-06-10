@@ -97,9 +97,12 @@ def parse_one_ann(info, filenames, root, filename, labels_to_ignore,
         
         if mark in mark2code.keys():
             code = mark2code[mark]
-            info.append([annotator, bunch, filename,mark, label,
-                         offset[0], offset[-1], 
-                         span.strip(string.punctuation), code])
+        else:
+            code = ''
+        info.append([annotator, bunch, filename,mark, label,
+                     offset[0], offset[-1], 
+                     span.strip(string.punctuation), code])
+            
     return info
 
 def parse_tsv(in_path):
