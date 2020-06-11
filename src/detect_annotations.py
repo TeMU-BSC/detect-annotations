@@ -60,7 +60,7 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
                 continue
                 # get only txt files
             print(filename)
-            
+
             #### 0. Initialize, etc. ####
             new_annotations = []
             pos_matrix = []
@@ -145,7 +145,7 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
             
             ## 5. Check new annotations are not already annotated in their own ann
             if filename_ann not in file2annot.keys():
-                final_new_annots = new_annots_no_duplicates
+                final_new_annots = new_annots_no_duplicates.copy()
             else:
                 annots_in_ann = file2annot[filename_ann]
                 final_new_annots = []

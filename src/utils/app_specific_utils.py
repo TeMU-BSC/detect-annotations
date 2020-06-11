@@ -193,6 +193,11 @@ def format_ann_info(df_annot, min_upper, with_notes=False):
         annot2code = df_annot.groupby('span')['code'].apply(lambda x: x.tolist()).to_dict()
     else:
         annot2code = {}
+        
+    # Filter codes: remove duplicates and remove empty ONLY if there are annotations
+    # with code and others without it
+    fclean = lambda x: list(set(filter(None, x) if any(map(lambda x:len(x)>0, x)) else x))
+    NEWannot2code = dict((k, fclean(v)) for k,v in annot2code.items())
     
     annot2annot = dict(zip(set_annotations, set_annotations))
     
@@ -227,7 +232,7 @@ def format_ann_info(df_annot, min_upper, with_notes=False):
         aux = list(map(lambda x:annot2annot_processed[x], v))
         file2annot_processed[k] = aux
 
-    return file2annot, file2annot_processed, annot2label, annot2annot_processed, annot2code
+    return file2annot, file2annot_processed, annot2label, annot2annot_processed, NEWannot2code
 
 
 def format_text_info(txt, min_upper):
@@ -283,7 +288,7 @@ def format_text_info(txt, min_upper):
     # Dictionary relating original words with words processed
     words2words = dict(zip(words_no_stw, words_no_stw))
     words2words_processed = dict((k, remove_accents(k.lower())) if len(k) > min_upper else 
-                                (k,v) for k,v in words2words.items())
+                                (k,remove_accents(k)) for k,v in words2words.items())
     # Map original position to processed word
     words_processed2pos = {}
     for k, v in words2pos.items():
