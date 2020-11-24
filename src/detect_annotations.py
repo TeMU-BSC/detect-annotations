@@ -123,22 +123,39 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
                         for span in match_text_locations:
                             # Check span is surrounded by spaces or punctuation signs &
                             # span is not contained in a previously stored prediction
-                            if (((txt[span[0]-1].isalnum() == False) &
-                                 (txt[span[1]].isalnum() == False)) &
-                                (not any([(item[0]<=span[0]) & (span[1]<=item[1]) 
-                                          for item in pos_matrix]))):
-                                
-                                # STORE PREDICTION and eliminate old predictions
-                                # contained in the new one.
-                                if with_notes==True:
-                                    code = annot2code[original_annot][0] # right now, only put first code
-                                else:
-                                    code = '#$NOCODE$#'
-                                new_annotations, pos_matrix = \
-                                    store_prediction(pos_matrix, new_annotations,
-                                                     span[0], span[1], original_label,
-                                                     original_annot, txt, code)
-                    
+                            if len(txt)==span[1]:
+                                # Safety: if len(txt)==span[1], I cannot check the character after the span
+                                if ((txt[span[0]-1].isalnum() == False) &
+                                    (not any([(item[0]<=span[0]) & (span[1]<=item[1]) 
+                                              for item in pos_matrix]))):
+                                    
+                                    # STORE PREDICTION and eliminate old predictions
+                                    # contained in the new one.
+                                    if with_notes==True:
+                                        code = annot2code[original_annot][0] # right now, only put first code
+                                    else:
+                                        code = '#$NOCODE$#'
+                                    new_annotations, pos_matrix = \
+                                        store_prediction(pos_matrix, new_annotations,
+                                                         span[0], span[1], original_label,
+                                                         original_annot, txt, code)
+                            else:
+                                if (((txt[span[0]-1].isalnum() == False) &
+                                     (txt[span[1]].isalnum() == False)) &
+                                    (not any([(item[0]<=span[0]) & (span[1]<=item[1]) 
+                                              for item in pos_matrix]))):
+                                    
+                                    # STORE PREDICTION and eliminate old predictions
+                                    # contained in the new one.
+                                    if with_notes==True:
+                                        code = annot2code[original_annot][0] # right now, only put first code
+                                    else:
+                                        code = '#$NOCODE$#'
+                                    new_annotations, pos_matrix = \
+                                        store_prediction(pos_matrix, new_annotations,
+                                                         span[0], span[1], original_label,
+                                                         original_annot, txt, code)
+                        
             ## 4. Remove duplicates ##
             new_annotations.sort()
             new_annots_no_duplicates = list(k for k,_ in itertools.groupby(new_annotations))

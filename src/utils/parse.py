@@ -27,15 +27,14 @@ def parse_ann(datapath, labels_to_ignore = [], with_notes=False):
     '''
     start = time.time()
     info = []
-
     ## Iterate over the files and parse them
     filenames = []
+    print(datapath)
     for root, dirs, files in os.walk(datapath):
-         for filename in files:
-             if filename[-3:] != 'ann':
-                 continue
-                 
-             info = parse_one_ann(info, filenames, root, filename, labels_to_ignore,
+        for filename in files:
+            if filename[-3:] != 'ann':
+                continue
+            info = parse_one_ann(info, filenames, root, filename, labels_to_ignore,
                                   ignore_related=True, with_notes=with_notes)
              
     if with_notes == True:

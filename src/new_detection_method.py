@@ -18,8 +18,8 @@ if __name__ == '__main__':
     
     ######## Set up some variables########
     min_upper = 5 # minimum number of characters a string must have to lowercase it
-    labels_to_ignore = []
-    ignore_annots = ['asdfggd']
+    labels_to_ignore = ['_REJ_PROFESION', '_REJ_ACTIVIDAD','_REJ_SITUACION_LABORAL','_SUG_PROFESION', '_SUG_ACTIVIDAD','_SUG_SITUACION_LABORAL']
+    ignore_annots = []
     
     ######## Parse command line arguments ########   
     print('\n\nParsing script arguments...\n\n')
