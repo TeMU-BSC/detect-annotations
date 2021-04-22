@@ -447,39 +447,42 @@ def remove_redundant_suggestions(datapath):
         for filename in files:
             if filename[-3:]!= 'ann':
                 continue
-            # get only ann files
-            f = open(os.path.join(root,filename)).readlines()
-
-            offsets = []
-            to_delete = []
-            
-            # 1. Get position of confirmed annotations
-            for line in f:
-                if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
-                    splitted = line.split('\t')
-                    label_offset = splitted[1].split(' ')
-                    if ';' not in label_offset[1:][1]: # Do not store discontinuous annotations
-                        offsets.append([int(label_offset[1:][0]),
-                                        int(label_offset[1:][1])])
-                        
-            # 2.1 Get position of suggestions.
-            # 2.2 Check suggestions are not contained in any confirmed annotation
-            for line in f:
-                if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
-                    splitted = line.split('\t')
-                    label_offset = splitted[1].split(' ')
-                    new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
-
-                    if any(map(lambda x: (x[0] <= new_offset[0]) & 
-                               (x[1] >= new_offset[1]), offsets)):
-                        to_delete.append(splitted[0])
-                        c = c +1
-                            
-            # 3. Re-write ann without suggestions that were contained in a
-            # confirmed annotation
-            with open(os.path.join(root,filename), 'w') as fout:
+            try:
+                # get only ann files
+                f = open(os.path.join(root,filename)).readlines()
+    
+                offsets = []
+                to_delete = []
+                
+                # 1. Get position of confirmed annotations
                 for line in f:
-                    if ((line.split('\t')[0] not in to_delete) & 
-                        (line.split('\t')[1].split(' ')[1] not in to_delete)):
-                        fout.write(line)
+                    if (line[0] == 'T') & (line.split('\t')[1][0:5] != '_SUG_'):
+                        splitted = line.split('\t')
+                        label_offset = splitted[1].split(' ')
+                        if ';' not in label_offset[1:][1]: # Do not store discontinuous annotations
+                            offsets.append([int(label_offset[1:][0]),
+                                            int(label_offset[1:][1])])
+                            
+                # 2.1 Get position of suggestions.
+                # 2.2 Check suggestions are not contained in any confirmed annotation
+                for line in f:
+                    if (line[0] == 'T') & (line.split('\t')[1][0:5] == '_SUG_'):
+                        splitted = line.split('\t')
+                        label_offset = splitted[1].split(' ')
+                        new_offset = [int(label_offset[1:][0]), int(label_offset[1:][1])]
+    
+                        if any(map(lambda x: (x[0] <= new_offset[0]) & 
+                                   (x[1] >= new_offset[1]), offsets)):
+                            to_delete.append(splitted[0])
+                            c = c +1
+                                
+                # 3. Re-write ann without suggestions that were contained in a
+                # confirmed annotation
+                with open(os.path.join(root,filename), 'w') as fout:
+                    for line in f:
+                        if ((line.split('\t')[0] not in to_delete) & 
+                            (line.split('\t')[1].split(' ')[1] not in to_delete)):
+                            fout.write(line)
+            except:
+                print('This file retrieved an error {}, please check the ANN file to see what is going on', format(filename))
     return c
