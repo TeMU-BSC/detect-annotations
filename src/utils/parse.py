@@ -87,11 +87,11 @@ def parse_one_ann(info, filenames, root, filename, labels_to_ignore,
         if label in labels_to_ignore:
             continue
         offset = label_offset[1:]
-        span = splitted[2].strip()
+        span = splitted[2].strip('\n')
         if with_notes==False:
             info.append([annotator, bunch, filename,mark, label,
                          offset[0], offset[-1], 
-                         span.strip(string.punctuation)])
+                         span.strip('\n')])
             continue
         
         if mark in mark2code.keys():
@@ -100,7 +100,7 @@ def parse_one_ann(info, filenames, root, filename, labels_to_ignore,
             code = ''
         info.append([annotator, bunch, filename,mark, label,
                      offset[0], offset[-1], 
-                     span.strip(string.punctuation), code])
+                     span.strip('\n'), code])
             
     return info
 
