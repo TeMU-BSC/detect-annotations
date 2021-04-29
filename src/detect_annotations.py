@@ -82,13 +82,11 @@ def detect_annots(datapath, min_upper, annot2code, file2annot_processed,
             
             # Generate candidates
             words_common = words_txt.intersection(words_annots)
-                
             #### 4. For common word, get all original annotations that contain
             #### that word and all matches in text.
             #### Then, check surroundings of all those matches to check if any
             #### of the original annotations is actually in the text ####
             for match in sorted(words_common):
-                
                 # Get annotations where this token is present
                 original_annotations = set([k for k,v in annot2annot_processed.items()\
                                             if match in v])
