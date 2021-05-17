@@ -12,7 +12,7 @@ from utils.parse import parse_tsv, parse_ann
 from utils.general_utils import argparser, copy_dir_structure, copy_all_files, \
     remove_accents
 from detect_annotations import detect_annots, detect_annots_dummy
-
+import os
 
 if __name__ == '__main__':
     
@@ -59,7 +59,16 @@ if __name__ == '__main__':
     print('Elapsed time: {}s'.format(round(total_t, 3)))
     print('Number of suggested annotations: {}'.format(c))
 
-    # TODO: remove annotations with \n inside them
+    # Remove annotations with \n inside them
+    detected_annots_clean = {}
+    for k,v in detected_annots.items():
+        val = []
+        for annot in v:
+            if '\n' in annot[0]:
+                continue
+            val.append(annot)
+        detected_annots_clean[k] = val
+                       
     
     ######### WRITE FILES #########   
     print('\n\nWriting new brat files...\n\n')
@@ -72,7 +81,7 @@ if __name__ == '__main__':
     copy_all_files(datapath, out_path)
     
     # Modify annotated files
-    modify_copied_files(detected_annots, out_path, with_notes)
+    modify_copied_files(detected_annots_clean, out_path, with_notes)
     
     
     ######## REMOVE REDUNDANT SUGGESTIONS ########
